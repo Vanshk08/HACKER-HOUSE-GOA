@@ -72,9 +72,9 @@ class FraudAnalyzer:
         # -----------------------------------------
 
         network_raw = self.client.get_transaction_network(
-    transaction_id,
-    attrs.get("transaction_time"),
-)
+            transaction_id,
+            attrs.get("transaction_time"),
+        )
 
         cards = []
         related_transactions = []
@@ -223,6 +223,68 @@ class FraudAnalyzer:
             }
         }
 
+    # -----------------------------------------
+    # 7. DEMO-FRIENDLY INVESTIGATION SUMMARY
+    # -----------------------------------------
+
+    def format_investigation_summary(self, result: dict) -> str:
+        """Return a concise, demo-friendly investigation summary."""
+
+        if not result.get("found"):
+            return (
+                "=== FRAUD INVESTIGATION ===\n"
+                "Transaction not found\n"
+                f"Transaction ID: {result.get('transaction_id')}"
+            )
+
+        risk = result["risk_assessment"]
+        transaction = result["transaction"]
+        network = result["network_evidence"]
+        signals = result.get("fraud_signals", [])
+
+        lines = [
+            "=== FRAUD INVESTIGATION SUMMARY ===",
+            f"Transaction ID  : {result['transaction_id']}",
+            f"Amount          : {transaction['amount']}",
+            f"Transaction Time: {transaction['transaction_time']}",
+            "",
+            f"Risk Score      : {risk['risk_score']}/100",
+            f"Risk Level      : {risk['risk_level']}",
+            "",
+            "Fraud Signals:"
+        ]
+
+        if signals:
+            for signal in signals:
+                lines.append(f"  - {signal}")
+        else:
+            lines.append(
+                "  - No significant fraud signals detected"
+            )
+
+        lines.extend([
+            "",
+            "Graph Evidence:",
+            f"  - Linked cards: {len(network['linked_cards'])}",
+            (
+                "  - Historical related transactions: "
+                f"{network['related_transaction_count']}"
+            ),
+        ])
+
+        for card in network["linked_cards"]:
+            lines.append(
+                f"  - Card {card['card_id']} "
+                f"(occupation: {card.get('occupation', 'Unknown')}, "
+                f"pagerank: {card.get('pagerank', 0)})"
+            )
+
+        lines.append(
+            "===================================="
+        )
+
+        return "\n".join(lines)
+
 
 if __name__ == "__main__":
 
@@ -230,5 +292,8 @@ if __name__ == "__main__":
 
     result = analyzer.analyze("832318")
 
-    print("\n=== FRAUD INVESTIGATION ===")
+    print("\n=== RAW FRAUD INVESTIGATION ===")
     print(result)
+
+    print("\n")
+    print(analyzer.format_investigation_summary(result))
