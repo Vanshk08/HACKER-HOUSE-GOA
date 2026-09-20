@@ -1,0 +1,191 @@
+{
+  "case_id": "HHG-008",
+  "input": {
+    "customer_id": "C13171",
+    "card_id": "C13171-K2",
+    "flagged_txn_id": "3558054",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C13171 message: 'I never made this $55.68 purchase. Please check my card.' Refers to 3558054.",
+    "risk_score": null
+  },
+  "status": "completed",
+  "runtime_seconds": 0.215,
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_customer_regions",
+      "get_transaction_sequence",
+      "get_card_history",
+      "get_similar_closed_cases",
+      "get_device_connections",
+      "find_shared_origins",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_customer_regions",
+      "get_transaction_sequence",
+      "get_card_history",
+      "get_similar_closed_cases",
+      "get_device_connections",
+      "find_shared_origins",
+      "request_customer_validation"
+    ],
+    "evidence_count": 9,
+    "hypotheses": [
+      {
+        "id": "hyp_1_recurring_behavior",
+        "title": "Legitimate Recurring Customer Behavior",
+        "description": "Transaction represents routine customer spending consistent with established history.",
+        "confidence": 0.1,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Customer explicitly reported unrecognized activity."
+        ]
+      },
+      {
+        "id": "hyp_2_unauthorized_fraud",
+        "title": "Unauthorized Third-Party Fraud",
+        "description": "Transaction was conducted by an unauthorized party.",
+        "confidence": 0.9,
+        "supporting_evidence": [
+          "Customer reported unrecognized transaction."
+        ],
+        "contradicting_evidence": []
+      },
+      {
+        "id": "hyp_3_card_compromise",
+        "title": "Historical Card Compromise Precedent",
+        "description": "Card credentials may have been cloned or compromised in an earlier breach.",
+        "confidence": 0.4,
+        "supporting_evidence": [
+          "Historical closed case records evaluated."
+        ],
+        "contradicting_evidence": [
+          "Customer continued active account usage."
+        ]
+      },
+      {
+        "id": "hyp_4_shared_device",
+        "title": "Shared Device / Connected Account Activity",
+        "description": "Activity initiated from a shared or compromised device profile.",
+        "confidence": 0.1,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Graph queries indicate no multi-account device syndicate."
+        ]
+      },
+      {
+        "id": "hyp_5_shared_region",
+        "title": "Shared Billing Region Activity",
+        "description": "Activity associated with shared geographic billing region.",
+        "confidence": 0.15,
+        "supporting_evidence": [
+          "Billing region exists in regional dataset."
+        ],
+        "contradicting_evidence": [
+          "Regional code alone does not constitute coordinated fraud ring."
+        ]
+      },
+      {
+        "id": "hyp_6_connected_cards",
+        "title": "Connected Cards Ring",
+        "description": "Associated cards sharing credentials or accounts.",
+        "confidence": 0.05,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Zero connected cards discovered in graph queries."
+        ]
+      },
+      {
+        "id": "hyp_7_coordinated_abuse",
+        "title": "Coordinated Abuse / Rapid Velocity",
+        "description": "High velocity botting or rapid sequence abuse.",
+        "confidence": 0.05,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Transaction sequence analysis shows normal velocity."
+        ]
+      },
+      {
+        "id": "hyp_8_insufficient_evidence",
+        "title": "Insufficient Evidence / Authorization Unknown",
+        "description": "Authorization cannot be confirmed without cardholder communication.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "Customer validation outreach request pending. Cardholder authorization status is unknown."
+        ],
+        "contradicting_evidence": []
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_type": "customer_confirmation",
+        "transaction_id": "3558054",
+        "question": "Did you authorize transaction 3558054?",
+        "status": "pending",
+        "created_at": "2026-09-19T22:59:11.625977+00:00",
+        "request_id": "req_cust_3558054",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true
+        }
+      }
+    ],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.52,
+    "fraud_type": null,
+    "exposure": 55.68,
+    "affected_txn_ids": [
+      "3558054"
+    ],
+    "supporting_evidence": [
+      "Inbound customer message reported transaction as unrecognized/unauthorized.",
+      "Flagged transaction amount: $55.68."
+    ],
+    "contradicting_evidence": [
+      "Formal customer validation response is pending; customer response status is unknown.",
+      "Cardholder identity and authorization unverified by direct outreach."
+    ],
+    "reasoning": "Case was opened from an inbound customer message regarding $55.68. However, verified customer response is unavailable in the challenge dataset ('customer_response_status' is unknown), and formal validation outreach is pending. Assessed as uncertain with customer verification requested.",
+    "confidence": 0.65
+  },
+  "policy": {
+    "actions": [
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "STEP_UP_AUTH",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.52 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.52 >= 0.30), external evidence requested (1 pending request(s)), customer disputed transaction.",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_type": "customer_confirmation",
+        "transaction_id": "3558054",
+        "question": "Did you authorize transaction 3558054?",
+        "status": "pending",
+        "created_at": "2026-09-19T22:59:11.625977+00:00",
+        "request_id": "req_cust_3558054",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true
+        }
+      }
+    ],
+    "exposure": 55.68,
+    "affected_txn_ids": [
+      "3558054"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  }
+}

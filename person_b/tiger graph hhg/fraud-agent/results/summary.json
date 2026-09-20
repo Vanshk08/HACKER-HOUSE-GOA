@@ -1,0 +1,454 @@
+{
+  "total_cases": 20,
+  "completed": 20,
+  "failed": 0,
+  "total_runtime_seconds": 5.501,
+  "aggregate_statistics": {
+    "verdict_counts": {
+      "uncertain": 19,
+      "suspected_fraud": 1
+    },
+    "fraud_type_counts": {
+      "none": 19,
+      "shared_device_syndicate": 1
+    },
+    "action_counts": {
+      "VERIFY_WITH_CUSTOMER": 5,
+      "CREATE_CASE": 20,
+      "STEP_UP_AUTH": 14,
+      "ESCALATE_TO_ANALYST": 2
+    },
+    "rule_counts": {
+      "R1": 19,
+      "GLOBAL_CREATE_CASE": 20,
+      "R8": 2
+    },
+    "average_tool_count": 9.0,
+    "average_evidence_count": 9.0,
+    "average_iterations": 6.0
+  },
+  "cases": [
+    {
+      "case_id": "HHG-001",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 77.07,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "VERIFY_WITH_CUSTOMER",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.932
+    },
+    {
+      "case_id": "HHG-002",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.48,
+      "fraud_type": null,
+      "exposure": 292.36,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.28
+    },
+    {
+      "case_id": "HHG-003",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 49.0,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "VERIFY_WITH_CUSTOMER",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.294
+    },
+    {
+      "case_id": "HHG-004",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 128.33,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.212
+    },
+    {
+      "case_id": "HHG-005",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 100.07,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.218
+    },
+    {
+      "case_id": "HHG-006",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 482.12,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.232
+    },
+    {
+      "case_id": "HHG-007",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 111.92,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "VERIFY_WITH_CUSTOMER",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.317
+    },
+    {
+      "case_id": "HHG-008",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 55.68,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.215
+    },
+    {
+      "case_id": "HHG-009",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 30.02,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.204
+    },
+    {
+      "case_id": "HHG-010",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 1000.03,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "R8",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "ESCALATE_TO_ANALYST",
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.215
+    },
+    {
+      "case_id": "HHG-011",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 131.3,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.213
+    },
+    {
+      "case_id": "HHG-012",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 30.91,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "VERIFY_WITH_CUSTOMER",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.305
+    },
+    {
+      "case_id": "HHG-013",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 35.66,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.232
+    },
+    {
+      "case_id": "HHG-014",
+      "status": "completed",
+      "verdict": "suspected_fraud",
+      "fraud_probability": 0.78,
+      "fraud_type": "shared_device_syndicate",
+      "exposure": 74.96,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.217
+    },
+    {
+      "case_id": "HHG-015",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 599.94,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "R8",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "ESCALATE_TO_ANALYST",
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.216
+    },
+    {
+      "case_id": "HHG-016",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 59.67,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.209
+    },
+    {
+      "case_id": "HHG-017",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 100.09,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.26
+    },
+    {
+      "case_id": "HHG-018",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.52,
+      "fraud_type": null,
+      "exposure": 39.08,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "VERIFY_WITH_CUSTOMER",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.268
+    },
+    {
+      "case_id": "HHG-019",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 99.92,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.225
+    },
+    {
+      "case_id": "HHG-020",
+      "status": "completed",
+      "verdict": "uncertain",
+      "fraud_probability": 0.42,
+      "fraud_type": null,
+      "exposure": 125.08,
+      "affected_txn_count": 1,
+      "matched_rules": [
+        "R1",
+        "GLOBAL_CREATE_CASE"
+      ],
+      "actions": [
+        "STEP_UP_AUTH",
+        "CREATE_CASE"
+      ],
+      "tool_count": 9,
+      "evidence_count": 9,
+      "iteration_count": 6,
+      "runtime_seconds": 0.217
+    }
+  ]
+}

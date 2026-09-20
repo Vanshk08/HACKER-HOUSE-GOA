@@ -1,0 +1,196 @@
+{
+  "case_id": "HHG-005",
+  "input": {
+    "customer_id": "C02923",
+    "card_id": "C02923-K1",
+    "flagged_txn_id": "3523199",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3523199 ($100.07, online) at 0.54. Review and decide.",
+    "risk_score": 0.54
+  },
+  "status": "completed",
+  "runtime_seconds": 0.218,
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_customer_regions",
+      "get_transaction_sequence",
+      "get_card_history",
+      "get_similar_closed_cases",
+      "get_device_connections",
+      "find_shared_origins",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_customer_regions",
+      "get_transaction_sequence",
+      "get_card_history",
+      "get_similar_closed_cases",
+      "get_device_connections",
+      "find_shared_origins",
+      "request_customer_validation"
+    ],
+    "evidence_count": 9,
+    "hypotheses": [
+      {
+        "id": "hyp_1_recurring_behavior",
+        "title": "Legitimate Recurring Customer Behavior",
+        "description": "Transaction represents routine customer spending consistent with established history.",
+        "confidence": 0.55,
+        "supporting_evidence": [
+          "Customer historical activity exists in billing regions."
+        ],
+        "contradicting_evidence": [
+          "Flagged by monitoring rules."
+        ]
+      },
+      {
+        "id": "hyp_2_unauthorized_fraud",
+        "title": "Unauthorized Third-Party Fraud",
+        "description": "Transaction was conducted by an unauthorized party.",
+        "confidence": 0.45,
+        "supporting_evidence": [
+          "Flagged for investigation."
+        ],
+        "contradicting_evidence": [
+          "Established customer relationship exists."
+        ]
+      },
+      {
+        "id": "hyp_3_card_compromise",
+        "title": "Historical Card Compromise Precedent",
+        "description": "Card credentials may have been cloned or compromised in an earlier breach.",
+        "confidence": 0.4,
+        "supporting_evidence": [
+          "Historical closed case records evaluated."
+        ],
+        "contradicting_evidence": [
+          "Customer continued active account usage."
+        ]
+      },
+      {
+        "id": "hyp_4_shared_device",
+        "title": "Shared Device / Connected Account Activity",
+        "description": "Activity initiated from a shared or compromised device profile.",
+        "confidence": 0.1,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Graph queries indicate no multi-account device syndicate."
+        ]
+      },
+      {
+        "id": "hyp_5_shared_region",
+        "title": "Shared Billing Region Activity",
+        "description": "Activity associated with shared geographic billing region.",
+        "confidence": 0.15,
+        "supporting_evidence": [
+          "Billing region exists in regional dataset."
+        ],
+        "contradicting_evidence": [
+          "Regional code alone does not constitute coordinated fraud ring."
+        ]
+      },
+      {
+        "id": "hyp_6_connected_cards",
+        "title": "Connected Cards Ring",
+        "description": "Associated cards sharing credentials or accounts.",
+        "confidence": 0.05,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Zero connected cards discovered in graph queries."
+        ]
+      },
+      {
+        "id": "hyp_7_coordinated_abuse",
+        "title": "Coordinated Abuse / Rapid Velocity",
+        "description": "High velocity botting or rapid sequence abuse.",
+        "confidence": 0.05,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Transaction sequence analysis shows normal velocity."
+        ]
+      },
+      {
+        "id": "hyp_8_insufficient_evidence",
+        "title": "Insufficient Evidence / Authorization Unknown",
+        "description": "Authorization cannot be confirmed without cardholder communication.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "Customer validation outreach request pending. Cardholder authorization status is unknown."
+        ],
+        "contradicting_evidence": []
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_type": "customer_confirmation",
+        "transaction_id": "3523199",
+        "question": "Did you authorize transaction 3523199?",
+        "status": "pending",
+        "created_at": "2026-09-19T22:59:10.860986+00:00",
+        "request_id": "req_cust_3523199",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true
+        }
+      }
+    ],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.42,
+    "fraud_type": null,
+    "exposure": 100.07,
+    "affected_txn_ids": [
+      "3523199"
+    ],
+    "supporting_evidence": [
+      "Transaction was flagged with elevated real-time model risk score.",
+      "Historical precedent of confirmed closed fraud cases on customer card."
+    ],
+    "contradicting_evidence": [
+      "Billing region 330 is an established customer region with historical transaction precedent.",
+      "Transaction channel (online) and amount ($100.07) align with historical profile.",
+      "Zero multi-account shared devices and zero connected cards found in graph exploration."
+    ],
+    "reasoning": "Evidence is balanced between legitimate repeat spending in established region 330 and potential historical card compromise precedent. Customer confirmation is pending.",
+    "confidence": 0.62
+  },
+  "policy": {
+    "actions": [
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "STEP_UP_AUTH",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.42 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.42 >= 0.30), external evidence requested (1 pending request(s)).",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_type": "customer_confirmation",
+        "transaction_id": "3523199",
+        "question": "Did you authorize transaction 3523199?",
+        "status": "pending",
+        "created_at": "2026-09-19T22:59:10.860986+00:00",
+        "request_id": "req_cust_3523199",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true
+        }
+      }
+    ],
+    "exposure": 100.07,
+    "affected_txn_ids": [
+      "3523199"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  }
+}

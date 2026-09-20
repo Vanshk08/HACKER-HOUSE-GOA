@@ -1,0 +1,4 @@
+langchain-core>=1.6.3
+langgraph>=1.2.11
+pydantic>=2.13.5
+duckdb>=1.5.5

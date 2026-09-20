@@ -2,3 +2,5 @@
 data/raw/
 __pycache__/
 *.pyc
+# Ignore TigerGraph local data
+person_b/tiger graph hhg/fraud-agent/data/
