@@ -47,20 +47,31 @@ def build_investigation_graph(
                 from agent.llm_engine import AutonomousInvestigatorLLM
             except ImportError:
                 from llm_engine import AutonomousInvestigatorLLM
+
             llm = AutonomousInvestigatorLLM()
+
         investigator = InvestigationAgent(llm)
 
     tool_executor = ToolExecutor()
 
     if assessment is None:
-        if assessment_llm is None and not hasattr(llm, "with_structured_output"):
+        if assessment_llm is None and not hasattr(
+            llm,
+            "with_structured_output"
+        ):
             try:
                 from agent.llm_engine import AutonomousAssessmentLLM
             except ImportError:
                 from llm_engine import AutonomousAssessmentLLM
+
             ass_llm = AutonomousAssessmentLLM()
         else:
-            ass_llm = assessment_llm or llm or getattr(investigator, "llm", None)
+            ass_llm = (
+                assessment_llm
+                or llm
+                or getattr(investigator, "llm", None)
+            )
+
         assessment = AssessmentAgent(ass_llm)
 
     if policy is None:
@@ -152,5 +163,9 @@ class InvestigationOrchestrator:
             )
 
     def run(self, state: InvestigationState):
-        return self.graph.invoke(state)
-
+        result = self.graph.invoke(state)
+
+        result["stop"] = True
+        result["stop_reason"] = "investigation_complete"
+
+        return result

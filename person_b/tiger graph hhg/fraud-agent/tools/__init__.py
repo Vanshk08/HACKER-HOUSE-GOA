@@ -9,7 +9,7 @@ All tools are decorated with `@tool` from langchain_core.tools and can be bound
 directly to the LLM:
     llm_with_tools = llm.bind_tools(INVESTIGATION_TOOLS)
 """
-
+from .tigergraph_fraud import investigate_transaction_graph
 from .transactions import (
     get_transaction,
     get_transaction_sequence,
@@ -45,6 +45,7 @@ from .evidence_requests import (
 
 INVESTIGATION_TOOLS = [
     get_transaction,
+    investigate_transaction_graph,
     get_transaction_sequence,
 
     get_customer_history,
