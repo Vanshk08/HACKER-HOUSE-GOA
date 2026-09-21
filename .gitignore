@@ -1,6 +1,13 @@
 .env
-data/raw/
+.env.*
+!.env.example
+
 __pycache__/
 *.pyc
-# Ignore TigerGraph local data
-person_b/tiger graph hhg/fraud-agent/data/
+
+results/
+scratch/
+
+*.duckdb
+
+data/*.csv
