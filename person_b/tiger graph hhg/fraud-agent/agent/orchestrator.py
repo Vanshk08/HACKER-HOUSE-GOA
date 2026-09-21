@@ -17,6 +17,14 @@ except ImportError:
 
 
 def should_continue(state: InvestigationState):
+    max_iterations = state.get("max_iterations", 10)
+    iteration_count = state.get("iteration_count", 0)
+
+    if iteration_count >= max_iterations:
+        return "assessment"
+
+    if state.get("stop", False):
+        return "assessment"
 
     messages = state.get("messages", [])
 
@@ -44,34 +52,36 @@ def build_investigation_graph(
     if investigator is None:
         if llm is None:
             try:
-                from agent.llm_engine import AutonomousInvestigatorLLM
-            except ImportError:
-                from llm_engine import AutonomousInvestigatorLLM
-
-            llm = AutonomousInvestigatorLLM()
-
+                from agent.llm_engine import get_investigator_llm
+                llm = get_investigator_llm()
+            except Exception:
+                try:
+                    from agent.llm_engine import AutonomousInvestigatorLLM
+                    llm = AutonomousInvestigatorLLM()
+                except ImportError:
+                    from llm_engine import AutonomousInvestigatorLLM
+                    llm = AutonomousInvestigatorLLM()
         investigator = InvestigationAgent(llm)
 
     tool_executor = ToolExecutor()
 
     if assessment is None:
-        if assessment_llm is None and not hasattr(
-            llm,
-            "with_structured_output"
-        ):
-            try:
-                from agent.llm_engine import AutonomousAssessmentLLM
-            except ImportError:
-                from llm_engine import AutonomousAssessmentLLM
-
-            ass_llm = AutonomousAssessmentLLM()
+        if assessment_llm is None:
+            if hasattr(llm, "with_structured_output"):
+                ass_llm = llm
+            else:
+                try:
+                    from agent.llm_engine import get_assessment_llm
+                    ass_llm = get_assessment_llm()
+                except Exception:
+                    try:
+                        from agent.llm_engine import AutonomousAssessmentLLM
+                        ass_llm = AutonomousAssessmentLLM()
+                    except ImportError:
+                        from llm_engine import AutonomousAssessmentLLM
+                        ass_llm = AutonomousAssessmentLLM()
         else:
-            ass_llm = (
-                assessment_llm
-                or llm
-                or getattr(investigator, "llm", None)
-            )
-
+            ass_llm = assessment_llm
         assessment = AssessmentAgent(ass_llm)
 
     if policy is None:
@@ -163,9 +173,4 @@ class InvestigationOrchestrator:
             )
 
     def run(self, state: InvestigationState):
-        result = self.graph.invoke(state)
-
-        result["stop"] = True
-        result["stop_reason"] = "investigation_complete"
-
-        return result
+        return self.graph.invoke(state)

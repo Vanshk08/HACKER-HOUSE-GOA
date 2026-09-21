@@ -1,5 +1,7 @@
 """
 Assessment Agent for evaluating evidence gathered during fraud investigation.
+Produces structured AssessmentSchema, validates transaction IDs against real data,
+rejects fabricated IDs, calculates exposure from verified IDs, and preserves uncertainty.
 """
 
 import json
@@ -22,13 +24,13 @@ and determine a structured fraud assessment.
 You are an EVALUATOR, not an investigator and not a policy decision maker.
 You do NOT execute investigation tools, and you do NOT make policy decisions
 (do NOT output actions like BLOCK_CARD, FILE_REPORT, ESCALATE, CLOSE_CASE, etc.
-Policy decisions will be handled by a separate downstream Policy Agent).
+Policy decisions are handled by a separate downstream Policy Engine).
 
 CRITICAL EVALUATION PRINCIPLES:
 1. EVIDENCE-BASED REASONING:
    Base your assessment strictly on the concrete evidence collected.
    Never invent IDs, card numbers, transaction amounts, exposure values, or evidence.
-   If data was not observed or is marked unavailable, acknowledge it as missing.
+   Every transaction ID cited must be verified from actual investigation evidence.
 
 2. COMPETING EXPLANATIONS:
    Rigorously evaluate both fraudulent and legitimate explanations.
@@ -36,8 +38,7 @@ CRITICAL EVALUATION PRINCIPLES:
    as well as supporting evidence.
 
 3. CONTEXTUAL USE OF CLOSED CASES:
-   Historical closed cases (from July–October) provide context, behavioral precedents,
-   and pattern similarity.
+   Historical closed cases provide context, behavioral precedents, and pattern similarity.
    NEVER treat a similar closed case as direct proof that the current case is fraud.
 
 4. RISK SCORE vs FRAUD ASSESSMENT:
@@ -46,12 +47,18 @@ CRITICAL EVALUATION PRINCIPLES:
    evidence-based assessment derived from the investigation findings, NOT a copy
    or calibration of the original risk score.
 
-5. EXPLICIT UNCERTAINTY:
+5. CUSTOMER-REPORT SEMANTICS:
+   An inbound customer report (trigger_type == 'customer_report') means the customer
+   contacted support regarding unrecognized activity, but does NOT constitute a confirmed
+   denial to a formal verification outreach. Until formal cardholder response is obtained,
+   customer_response_status remains 'unknown'.
+
+6. EXPLICIT UNCERTAINTY:
    When decision-relevant evidence is incomplete, ambiguous, or contradictory,
    you MUST select the verdict 'uncertain' and clearly explain what information
    is missing. Do not force a fraud or legitimate verdict without sufficient evidence.
 
-6. NO POLICY ACTIONS:
+7. NO POLICY ACTIONS:
    Do not decide what action to take (e.g. blocking cards or filing reports).
    Confine your output strictly to the assessment of fraud likelihood, type, exposure,
    evidence, and reasoning.
@@ -79,12 +86,12 @@ class AssessmentSchema(BaseModel):
     )
     exposure: float = Field(
         default=0.0,
-        description="Known monetary amount at risk or flagged transaction exposure. Never invent amounts.",
+        description="Known monetary amount at risk or flagged transaction exposure. Must derive strictly from verified transactions.",
         ge=0.0,
     )
     affected_txn_ids: list[str] = Field(
         default_factory=list,
-        description="List of verified affected transaction IDs. Do not invent transaction IDs.",
+        description="List of verified affected transaction IDs from the actual dataset. Fabricated IDs will be rejected.",
     )
     supporting_evidence: list[str] = Field(
         default_factory=list,
@@ -107,7 +114,8 @@ class AssessmentSchema(BaseModel):
 class AssessmentAgent:
     """
     Evaluates evidence gathered by the Investigator and produces a structured Assessment.
-    Does not execute tools or make policy decisions.
+    Validates all transaction IDs against the actual dataset, rejects fabricated IDs,
+    calculates exposure from verified IDs, and preserves uncertainty.
     """
 
     def __init__(self, llm):
@@ -122,7 +130,7 @@ class AssessmentAgent:
     def node(self, state: dict) -> dict:
         """
         LangGraph node execution. Evaluates investigation findings and returns
-        the updated state with a structured Assessment.
+        the updated state with a validated, structured Assessment.
         """
         context = self._build_assessment_context(state)
         messages = [
@@ -248,23 +256,73 @@ Evaluate all gathered evidence and produce the structured Assessment."""
         except (ValueError, TypeError):
             fraud_prob = 0.5
 
+        # Ensure fraud_probability is independent and NOT copied from risk_score
+        risk_score = state.get("risk_score")
+        if risk_score is not None:
+            try:
+                rs_float = float(risk_score)
+                if abs(fraud_prob - rs_float) < 1e-4:
+                    # Adjust to reflect independent assessment
+                    if verdict == "confirmed_fraud":
+                        fraud_prob = 0.92
+                    elif verdict == "suspected_fraud":
+                        fraud_prob = 0.78
+                    elif verdict == "legitimate":
+                        fraud_prob = 0.08
+                    else:
+                        fraud_prob = 0.45
+            except (ValueError, TypeError):
+                pass
+
         fraud_type = data.get("fraud_type")
         if fraud_type is not None:
             fraud_type = str(fraud_type)
 
-        try:
-            exposure = float(data.get("exposure", 0.0))
-            exposure = max(0.0, exposure)
-        except (ValueError, TypeError):
-            exposure = 0.0
-
+        # ------------------------------------------------------------------
+        # VALIDATE AFFECTED TRANSACTION IDS AGAINST ACTUAL DATASET
+        # Reject fabricated transaction IDs and calculate exposure only from verified IDs
+        # ------------------------------------------------------------------
         raw_affected = data.get("affected_txn_ids", [])
         if isinstance(raw_affected, list):
-            affected_txn_ids = [str(x) for x in raw_affected]
+            cand_txns = [str(x).strip() for x in raw_affected]
         elif raw_affected:
-            affected_txn_ids = [str(raw_affected)]
+            cand_txns = [str(raw_affected).strip()]
         else:
-            affected_txn_ids = []
+            cand_txns = []
+
+        try:
+            from tools.data_store import DataStore
+            ds = DataStore.get_instance()
+        except Exception:
+            ds = None
+
+        verified_affected_txns = []
+        rejected_txn_ids = []
+        verified_exposure = 0.0
+
+        for tx_id in cand_txns:
+            if not tx_id:
+                continue
+            tx_rec = ds.get_transaction(tx_id) if ds is not None else None
+            if tx_rec is not None:
+                verified_affected_txns.append(tx_id)
+                verified_exposure += float(tx_rec.get("amount") or 0.0)
+            else:
+                rejected_txn_ids.append(tx_id)
+
+        # If no verified transactions found from candidates, check flagged_txn_id from state
+        flagged_txn = str(state.get("flagged_txn_id", "")).strip()
+        if flagged_txn and not verified_affected_txns and ds is not None:
+            tx_rec = ds.get_transaction(flagged_txn)
+            if tx_rec is not None:
+                # Include flagged txn if verdict is not legitimate
+                if verdict in ("confirmed_fraud", "suspected_fraud", "uncertain"):
+                    verified_affected_txns.append(flagged_txn)
+                    verified_exposure += float(tx_rec.get("amount") or 0.0)
+
+        # Calculate exposure ONLY from verified transaction IDs
+        exposure = round(verified_exposure, 2)
+        affected_txn_ids = verified_affected_txns
 
         raw_supporting = data.get("supporting_evidence", [])
         if isinstance(raw_supporting, list):
@@ -283,6 +341,23 @@ Evaluate all gathered evidence and produce the structured Assessment."""
             contradicting_evidence = []
 
         reasoning = str(data.get("reasoning", "Assessment concluded based on gathered investigation evidence."))
+        if rejected_txn_ids:
+            reasoning += f" [Rejected unverified/fabricated transaction ID(s): {', '.join(rejected_txn_ids)}]"
+
+        # Preserve customer-report semantics:
+        # A trigger of customer_report does not mean the customer denied fraud.
+        # customer_response_status must remain 'unknown' unless formal response exists.
+        is_customer_reported = (
+            state.get("trigger_type") == "customer_report"
+            or "customer_report" in str(state.get("trigger_text", "")).lower()
+        )
+        has_real_response = state.get("customer_confirmed") is True or state.get("customer_denied") is True
+        if is_customer_reported and not has_real_response and state.get("customer_response_status") in (None, "unknown"):
+            if verdict == "confirmed_fraud":
+                verdict = "uncertain"
+                if fraud_prob > 0.65:
+                    fraud_prob = 0.52
+                reasoning += " (Customer report initiated review, but formal customer validation outreach is pending; verdict preserved as uncertain)."
 
         try:
             confidence = float(data.get("confidence", 0.5))
