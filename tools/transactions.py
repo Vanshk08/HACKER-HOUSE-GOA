@@ -9,7 +9,7 @@ metrics without interpreting fraud or making policy decisions.
 from typing import Any
 from langchain_core.tools import tool
 
-from .data_store import DataStore
+from .hhgoa_data import transaction, transaction_sequence
 
 
 @tool
@@ -28,27 +28,7 @@ def get_transaction(transaction_id: str) -> dict[str, Any]:
         A dictionary containing observed transaction data, attributes,
         derived calculations, and backend status.
     """
-    ds = DataStore.get_instance()
-    res = ds.get_transaction(str(transaction_id).strip())
-    if res:
-        return res
-
-    return {
-        "transaction_id": transaction_id,
-        "customer_id": None,
-        "card_id": None,
-        "timestamp": None,
-        "amount": None,
-        "channel": None,
-        "billing_region": None,
-        "risk_score": None,
-        "attributes": {},
-        "observed_data": {"transaction_id": transaction_id, "raw_record": None},
-        "derived_calculations": {},
-        "unavailable_data": ["customer_id", "card_id", "timestamp", "amount", "channel", "billing_region", "risk_score"],
-        "backend_status": "real_dataset",
-        "backend_note": f"Transaction {transaction_id} not found in challenge dataset.",
-    }
+    return transaction(str(transaction_id).strip())
 
 
 @tool
@@ -79,10 +59,5 @@ def get_transaction_sequence(
         A dictionary containing target transaction, previous transactions,
         subsequent transactions, time differences, and sequence observations.
     """
-    ds = DataStore.get_instance()
-    return ds.get_transaction_sequence(
-        customer_id=str(customer_id).strip(),
-        transaction_id=str(transaction_id).strip(),
-        window_minutes=window_minutes,
-    )
+    return transaction_sequence(str(customer_id).strip(), str(transaction_id).strip(), window_minutes)
 

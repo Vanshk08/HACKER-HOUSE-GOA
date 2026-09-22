@@ -1,0 +1,75 @@
+// Read-only investigation queries for the HHGOA_IEEE challenge graph.
+// These queries use only observed challenge relationships and fields.
+
+CREATE QUERY transaction_profile(STRING transaction_id) FOR GRAPH HHGOA_IEEE {
+  result = SELECT t FROM HHGOA_Transaction:t WHERE t.TransactionID == transaction_id;
+  PRINT result;
+}
+
+CREATE QUERY customer_history(STRING customer_id) FOR GRAPH HHGOA_IEEE {
+  customer = SELECT c FROM HHGOA_Customer:c WHERE c.customer_id == customer_id;
+  cards = SELECT card FROM customer -(HHGOA_OWNS)-> HHGOA_Card:card;
+  txns = SELECT t FROM cards -(HHGOA_MADE)-> HHGOA_Transaction:t;
+  PRINT customer;
+  PRINT cards;
+  PRINT txns;
+}
+
+CREATE QUERY card_history(STRING card_id) FOR GRAPH HHGOA_IEEE {
+  card = SELECT c FROM HHGOA_Card:c WHERE c.card_id == card_id;
+  txns = SELECT t FROM card -(HHGOA_MADE)-> HHGOA_Transaction:t;
+  PRINT card;
+  PRINT txns;
+}
+
+CREATE QUERY related_transactions(STRING card_id) FOR GRAPH HHGOA_IEEE {
+  txns = SELECT t FROM HHGOA_Card:c -(HHGOA_MADE)-> HHGOA_Transaction:t WHERE c.card_id == card_id;
+  PRINT txns;
+}
+
+CREATE QUERY device_neighbors(STRING device_profile_id) FOR GRAPH HHGOA_IEEE {
+  device = SELECT d FROM HHGOA_DeviceProfile:d WHERE d.device_profile_id == device_profile_id;
+  txns = SELECT t FROM HHGOA_Transaction:t -(HHGOA_FROM_DEVICE)-> HHGOA_DeviceProfile:d
+         WHERE d.device_profile_id == device_profile_id;
+  PRINT device;
+  PRINT txns;
+}
+
+CREATE QUERY region_neighbors(STRING region_id) FOR GRAPH HHGOA_IEEE {
+  region = SELECT r FROM HHGOA_BillingRegion:r WHERE r.region_id == region_id;
+  txns = SELECT t FROM HHGOA_Transaction:t -(HHGOA_BILLED_IN)-> HHGOA_BillingRegion:r2
+         WHERE r2.region_id == region_id;
+  PRINT region;
+  PRINT txns;
+}
+
+CREATE QUERY email_domain_neighbors(STRING domain) FOR GRAPH HHGOA_IEEE {
+  email = SELECT e FROM HHGOA_EmailDomain:e WHERE e.domain == domain;
+  txns = SELECT t FROM HHGOA_Transaction:t -(HHGOA_PURCHASER_EMAIL)-> HHGOA_EmailDomain:e2
+         WHERE e2.domain == domain;
+  PRINT email;
+  PRINT txns;
+}
+
+CREATE QUERY transaction_window(STRING card_id, DATETIME start_time, DATETIME end_time) FOR GRAPH HHGOA_IEEE {
+  txns = SELECT t FROM HHGOA_Card:c -(HHGOA_MADE)-> HHGOA_Transaction:t
+          WHERE c.card_id == card_id
+            AND t.ts >= start_time
+            AND t.ts <= end_time;
+  PRINT txns;
+}
+
+CREATE QUERY similar_closed_cases(STRING customer_id, STRING pattern) FOR GRAPH HHGOA_IEEE {
+  cases = SELECT c FROM HHGOA_ClosedCase:c
+          WHERE c.customer_id == customer_id
+             OR c.pattern == pattern;
+  PRINT cases;
+}
+
+CREATE QUERY get_case(STRING case_id) FOR GRAPH HHGOA_IEEE {
+  result = SELECT c FROM HHGOA_ClosedCase:c WHERE c.case_id == case_id;
+  PRINT result;
+}
+
+// Case writeback is performed through guarded upsert calls in
+// writeback_hhgoa_ieee.py. No mutation query is installed here.

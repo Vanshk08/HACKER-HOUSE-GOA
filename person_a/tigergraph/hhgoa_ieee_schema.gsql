@@ -1,0 +1,102 @@
+// HHGOA_IEEE graph schema for the official HHGOA challenge dataset.
+// This file intentionally targets a new graph and does not modify Transaction_Fraud.
+
+CREATE VERTEX HHGOA_Customer (
+  PRIMARY_ID customer_id STRING
+) WITH primary_id_as_attribute="true";
+
+CREATE VERTEX HHGOA_Card (
+  PRIMARY_ID card_id STRING,
+  customer_id STRING,
+  card1 STRING,
+  card2 STRING,
+  card3 STRING,
+  card4 STRING,
+  card5 STRING,
+  card6 STRING
+) WITH primary_id_as_attribute="true";
+
+CREATE VERTEX HHGOA_Transaction (
+  PRIMARY_ID TransactionID STRING,
+  TransactionDT UINT,
+  TransactionAmt DOUBLE,
+  customer_id STRING,
+  ts DATETIME,
+  channel STRING,
+  risk_score FLOAT,
+  ProductCD STRING,
+  card1 STRING,
+  card2 STRING,
+  card3 STRING,
+  card4 STRING,
+  card5 STRING,
+  card6 STRING,
+  addr1 STRING,
+  addr2 STRING,
+  dist1 FLOAT,
+  dist2 FLOAT,
+  P_emaildomain STRING,
+  R_emaildomain STRING,
+  C1 FLOAT, C2 FLOAT, C3 FLOAT, C4 FLOAT, C5 FLOAT, C6 FLOAT, C7 FLOAT,
+  C8 FLOAT, C9 FLOAT, C10 FLOAT, C11 FLOAT, C12 FLOAT, C13 FLOAT, C14 FLOAT,
+  D1 FLOAT, D2 FLOAT, D3 FLOAT, D4 FLOAT, D5 FLOAT, D6 FLOAT, D7 FLOAT,
+  D8 FLOAT, D9 FLOAT, D10 FLOAT, D11 FLOAT, D12 FLOAT, D13 FLOAT, D14 FLOAT, D15 FLOAT,
+  M1 STRING, M2 STRING, M3 STRING, M4 STRING, M5 STRING, M6 STRING, M7 STRING, M8 STRING, M9 STRING,
+  V1 FLOAT, V2 FLOAT, V3 FLOAT, V4 FLOAT, V5 FLOAT, V10 FLOAT, V11 FLOAT, V12 FLOAT,
+  V13 FLOAT, V279 FLOAT, V280 FLOAT, V285 FLOAT, V307 FLOAT, V310 FLOAT
+) WITH primary_id_as_attribute="true";
+
+CREATE VERTEX HHGOA_DeviceProfile (
+  PRIMARY_ID device_profile_id STRING,
+  DeviceInfo STRING,
+  DeviceType STRING,
+  id_30 STRING,
+  id_31 STRING,
+  id_32 STRING,
+  id_33 STRING,
+  id_34 STRING,
+  id_35 STRING,
+  id_36 STRING,
+  id_37 STRING,
+  id_38 STRING
+) WITH primary_id_as_attribute="true";
+
+CREATE VERTEX HHGOA_EmailDomain (
+  PRIMARY_ID domain STRING
+) WITH primary_id_as_attribute="true";
+
+CREATE VERTEX HHGOA_BillingRegion (
+  PRIMARY_ID region_id STRING,
+  addr1 STRING,
+  addr2 STRING
+) WITH primary_id_as_attribute="true";
+
+CREATE VERTEX HHGOA_ClosedCase (
+  PRIMARY_ID case_id STRING,
+  customer_id STRING,
+  card_id STRING,
+  opened_at DATETIME,
+  closed_at DATETIME,
+  outcome STRING,
+  pattern STRING,
+  first_fraud_txn_id STRING,
+  txn_ids STRING,
+  n_txns INT,
+  exposure_usd DOUBLE,
+  connected_card_ids STRING,
+  actions_taken STRING,
+  report_filed BOOL,
+  analyst_notes STRING
+) WITH primary_id_as_attribute="true";
+
+CREATE DIRECTED EDGE HHGOA_OWNS (FROM HHGOA_Customer, TO HHGOA_Card);
+CREATE DIRECTED EDGE HHGOA_MADE (FROM HHGOA_Card, TO HHGOA_Transaction);
+CREATE DIRECTED EDGE HHGOA_FROM_DEVICE (FROM HHGOA_Transaction, TO HHGOA_DeviceProfile);
+CREATE DIRECTED EDGE HHGOA_PURCHASER_EMAIL (FROM HHGOA_Transaction, TO HHGOA_EmailDomain);
+CREATE DIRECTED EDGE HHGOA_BILLED_IN (FROM HHGOA_Transaction, TO HHGOA_BillingRegion);
+CREATE DIRECTED EDGE HHGOA_NEXT (FROM HHGOA_Transaction, TO HHGOA_Transaction);
+CREATE DIRECTED EDGE HHGOA_INVOLVES (FROM HHGOA_ClosedCase, TO HHGOA_Transaction);
+CREATE DIRECTED EDGE HHGOA_ON_CARD (FROM HHGOA_ClosedCase, TO HHGOA_Card);
+CREATE DIRECTED EDGE HHGOA_CONNECTED_TO (FROM HHGOA_ClosedCase, TO HHGOA_Card);
+
+CREATE GRAPH HHGOA_IEEE (*);

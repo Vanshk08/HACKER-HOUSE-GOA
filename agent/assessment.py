@@ -157,8 +157,16 @@ class AssessmentAgent:
         ]
 
         if self.structured_llm is not None:
-            raw_output = self.structured_llm.invoke(messages)
-            assessment_dict = self._normalize_assessment(raw_output, state)
+            try:
+                raw_output = self.structured_llm.invoke(messages)
+                assessment_dict = self._normalize_assessment(raw_output, state)
+            except Exception:
+                # Some providers reject incomplete structured objects before the
+                # normalizer can fill defaults for missing fields.
+                if not callable(getattr(self.llm, "invoke", None)):
+                    raise
+                raw_output = self.llm.invoke(messages)
+                assessment_dict = self._normalize_assessment(raw_output, state)
         else:
             raw_output = self.llm.invoke(messages)
             assessment_dict = self._normalize_assessment(raw_output, state)
@@ -321,10 +329,9 @@ Evaluate all gathered evidence and produce the complete 9-field structured Asses
             cand_txns = []
 
         try:
-            from tools.data_store import DataStore
-            ds = DataStore.get_instance()
+            from tools.hhgoa_data import transaction
         except Exception:
-            ds = None
+            transaction = None
 
         verified_affected_txns = []
         rejected_txn_ids = []
@@ -333,18 +340,21 @@ Evaluate all gathered evidence and produce the complete 9-field structured Asses
         for tx_id in cand_txns:
             if not tx_id:
                 continue
-            tx_rec = ds.get_transaction(tx_id) if ds is not None else None
+            tx_rec = transaction(tx_id) if transaction is not None else None
             if tx_rec is not None:
-                verified_affected_txns.append(tx_id)
-                verified_exposure += float(tx_rec.get("amount") or 0.0)
+                if tx_rec.get("backend_status") == "hhgoa_ieee" and tx_rec.get("amount") is not None:
+                    verified_affected_txns.append(tx_id)
+                    verified_exposure += float(tx_rec.get("amount") or 0.0)
+                else:
+                    rejected_txn_ids.append(tx_id)
             else:
                 rejected_txn_ids.append(tx_id)
 
         # If no verified transactions found from candidates, check flagged_txn_id from state
         flagged_txn = str(state.get("flagged_txn_id", "")).strip()
-        if flagged_txn and not verified_affected_txns and ds is not None:
-            tx_rec = ds.get_transaction(flagged_txn)
-            if tx_rec is not None:
+        if flagged_txn and not verified_affected_txns and transaction is not None:
+            tx_rec = transaction(flagged_txn)
+            if tx_rec.get("backend_status") == "hhgoa_ieee" and tx_rec.get("amount") is not None:
                 # Include flagged txn if verdict is not legitimate
                 if verdict in ("confirmed_fraud", "suspected_fraud", "uncertain"):
                     verified_affected_txns.append(flagged_txn)

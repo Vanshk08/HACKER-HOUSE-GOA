@@ -10,6 +10,18 @@ from typing import Any, Optional
 from datetime import datetime
 
 
+def _resolve_dataset_path(data_dir: str, filename: str) -> str:
+    """Return the canonical path for challenge CSV files, including the data/raw layout."""
+    candidates = [
+        os.path.join(data_dir, filename),
+        os.path.join(data_dir, "raw", filename),
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return candidates[0]
+
+
 def _get_data_dir() -> str:
     # Look for data directory relative to project root
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,10 +65,10 @@ class DataStore:
 
     def _ensure_tables(self):
         tables = [r[0] for r in self._con.execute("SHOW TABLES").fetchall()]
-        cp_path = os.path.join(self.data_dir, "case_pack.csv").replace("\\", "/")
-        cc_path = os.path.join(self.data_dir, "closed_cases_history.csv").replace("\\", "/")
-        id_path = os.path.join(self.data_dir, "identity.csv").replace("\\", "/")
-        tx_path = os.path.join(self.data_dir, "transactions.csv").replace("\\", "/")
+        cp_path = _resolve_dataset_path(self.data_dir, "case_pack.csv").replace("\\", "/")
+        cc_path = _resolve_dataset_path(self.data_dir, "closed_cases_history.csv").replace("\\", "/")
+        id_path = _resolve_dataset_path(self.data_dir, "identity.csv").replace("\\", "/")
+        tx_path = _resolve_dataset_path(self.data_dir, "transactions.csv").replace("\\", "/")
 
         if "case_pack" not in tables and os.path.exists(cp_path):
             self._con.execute(f"CREATE TABLE case_pack AS SELECT * FROM read_csv_auto('{cp_path}')")

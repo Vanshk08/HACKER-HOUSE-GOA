@@ -9,7 +9,7 @@ verdicts for the current case under investigation.
 from typing import Any
 from langchain_core.tools import tool
 
-from .data_store import DataStore
+from .hhgoa_data import closed_case, similar_closed_cases
 
 
 @tool
@@ -42,8 +42,7 @@ def get_similar_closed_cases(
         card ID, historical verdict, pattern, affected transaction IDs,
         exposure, actions, analyst notes), query criteria, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_similar_closed_cases(
+    return similar_closed_cases(
         customer_id=str(customer_id).strip() if customer_id else None,
         card_id=str(card_id).strip() if card_id else None,
         pattern=str(pattern).strip() if pattern else None,
@@ -67,6 +66,5 @@ def get_closed_case(case_id: str) -> dict[str, Any]:
         pattern, exposure amount, affected transaction IDs, historical actions taken,
         evidence records, and analyst notes.
     """
-    ds = DataStore.get_instance()
-    return ds.get_closed_case(str(case_id).strip())
+    return closed_case(str(case_id).strip())
 

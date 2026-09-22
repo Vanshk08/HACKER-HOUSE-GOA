@@ -42,6 +42,7 @@ from .evidence_requests import (
     request_customer_validation,
     request_step_up,
 )
+from .tigergraph_fraud import investigate_transaction_graph
 
 INVESTIGATION_TOOLS = [
     get_transaction,
@@ -67,6 +68,7 @@ INVESTIGATION_TOOLS = [
 
     request_customer_validation,
     request_step_up,
+    investigate_transaction_graph,
 ]
 
 __all__ = [
@@ -87,4 +89,5 @@ __all__ = [
     "find_related_fraud",
     "request_customer_validation",
     "request_step_up",
+    "investigate_transaction_graph",
 ]

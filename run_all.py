@@ -38,16 +38,38 @@ ALLOWED_RULES = {
 ALLOWED_CUSTOMER_STATUSES = {"unknown", "confirmed", "denied", "no_response"}
 
 
+def _resolve_casepack_path(csv_path: str) -> str:
+    """Resolve the canonical case-pack CSV, including the repo's data/raw layout."""
+    candidates: list[str] = []
+    if csv_path:
+        candidates.append(csv_path)
+        candidates.append(os.path.join(PROJECT_ROOT, csv_path))
+        candidates.append(os.path.join(PROJECT_ROOT, "data", csv_path))
+        candidates.append(os.path.join(PROJECT_ROOT, "data", "raw", os.path.basename(csv_path)))
+
+    if os.path.basename(csv_path) == "case_pack.csv" or not os.path.basename(csv_path):
+        candidates.extend([
+            os.path.join(PROJECT_ROOT, "data", "raw", "case_pack.csv"),
+            os.path.join(PROJECT_ROOT, "data", "case_pack.csv"),
+        ])
+
+    for candidate in candidates:
+        if candidate and os.path.exists(candidate):
+            return candidate
+
+    return csv_path
+
+
 def load_cases(csv_path: str = "data/case_pack.csv") -> list[dict[str, Any]]:
     """
     Loads all cases from case_pack.csv, validating required identifiers.
     Discovers cases dynamically without hardcoded IDs.
     """
-    if not os.path.exists(csv_path):
-        # Try relative to PROJECT_ROOT
-        csv_path = os.path.join(PROJECT_ROOT, csv_path)
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"Case pack dataset not found at {csv_path}")
+    resolved_path = _resolve_casepack_path(csv_path)
+    if not os.path.exists(resolved_path):
+        raise FileNotFoundError(f"Case pack dataset not found at {resolved_path}")
+
+    csv_path = resolved_path
 
     cases = []
     with open(csv_path, mode="r", encoding="utf-8") as f:

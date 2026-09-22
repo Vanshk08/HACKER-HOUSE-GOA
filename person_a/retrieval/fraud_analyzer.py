@@ -22,12 +22,14 @@ class FraudAnalyzer:
             }
 
         transaction = raw[0]["result"][0]
-        attrs = transaction["attributes"]
+        attrs = transaction.get("attributes", {})
+        customer_id = attrs.get("customer_id")
+        card_id = self.client.card_id_from_attributes(attrs)
 
         score = 0
         signals = []
 
-        amount = attrs.get("amount", 0)
+        amount = attrs.get("TransactionAmt", attrs.get("amount", 0))
 
         if amount > 500:
             score += 20
@@ -68,33 +70,27 @@ class FraudAnalyzer:
             )
 
         # -----------------------------------------
-        # 2. GRAPH NETWORK
+        # 2. HHGOA GRAPH EVIDENCE
         # -----------------------------------------
 
-        network_raw = self.client.get_transaction_network(
-            transaction_id,
-            attrs.get("transaction_time"),
-        )
-
+        customer_raw = self.client.get_customer_history(customer_id) if customer_id else []
+        card_raw = self.client.get_card_history(card_id) if card_id else []
+        network_raw = self.client.get_related_transactions(card_id) if card_id else []
         cards = []
         related_transactions = []
 
-        if network_raw:
-            for block in network_raw:
-
-                if "cards" in block:
-                    cards.extend(block["cards"])
-
-                if "related_tx" in block:
-                    related_transactions.extend(
-                        block["related_tx"]
-                    )
+        for block in customer_raw:
+            cards.extend(block.get("cards", []))
+        for block in card_raw:
+            cards.extend(block.get("card", []))
+        for block in network_raw:
+            related_transactions.extend(block.get("txns", []))
 
         # Remove seed transaction if returned
         related_transactions = [
             tx
             for tx in related_transactions
-            if tx.get("v_id") != transaction_id
+            if str(tx.get("v_id")) != str(transaction_id)
         ]
 
         related_count = len(related_transactions)
@@ -155,10 +151,28 @@ class FraudAnalyzer:
                 "transaction_time": tx_attrs.get(
                     "transaction_time"
                 ),
-                "merchant_pagerank": tx_attrs.get(
-                    "mer_pagerank"
-                ),
+                "merchant_pagerank": None,
             })
+
+        region_evidence = []
+        region_id = self.client.region_id_from_attributes(attrs)
+        if region_id:
+            for block in self.client.get_region_neighbors(region_id):
+                region_evidence.extend(block.get("region", []))
+
+        similar_cases = []
+        if customer_id:
+            for block in self.client.get_similar_closed_cases(customer_id, "out_of_region_use"):
+                similar_cases.extend(block.get("cases", []))
+
+        # HHGOA has no identity row or email value for some transactions. Only
+        # expose evidence returned by the graph; never infer missing identities.
+        email_evidence = []
+        for field in ("P_emaildomain", "R_emaildomain"):
+            domain = str(attrs.get(field, "") or "").strip()
+            if domain:
+                for block in self.client.get_email_domain_neighbors("domain:" + domain.lower()):
+                    email_evidence.extend(block.get("email", []))
 
         # -----------------------------------------
         # 6. FINAL RESPONSE
@@ -166,7 +180,7 @@ class FraudAnalyzer:
 
         return {
             "transaction_id": attrs.get(
-                "id",
+                "TransactionID",
                 transaction_id
             ),
 
@@ -179,9 +193,11 @@ class FraudAnalyzer:
 
             "transaction": {
                 "amount": amount,
-                "transaction_time": attrs.get(
-                    "transaction_time"
-                )
+                "transaction_time": attrs.get("ts"),
+                "customer_id": customer_id,
+                "card_id": card_id,
+                "risk_score": attrs.get("risk_score"),
+                "channel": attrs.get("channel"),
             },
 
             "fraud_signals": signals,
@@ -203,13 +219,9 @@ class FraudAnalyzer:
             "network_evidence": {
                 "linked_cards": [
                     {
-                        "card_id": card.get("v_id"),
-                        "occupation": card.get(
-                            "attributes", {}
-                        ).get("occupation"),
-                        "pagerank": card.get(
-                            "attributes", {}
-                        ).get("pagerank")
+                        "card_id": card.get("v_id") or card.get("attributes", {}).get("card_id"),
+                        "occupation": None,
+                        "pagerank": None,
                     }
                     for card in cards
                 ],
@@ -220,7 +232,12 @@ class FraudAnalyzer:
                 # Keep the response manageable.
                 "related_transactions":
                     related_summary[:20]
-            }
+            },
+            "customer_history": customer_raw,
+            "card_history": card_raw,
+            "region_evidence": region_evidence,
+            "email_evidence": email_evidence,
+            "similar_prior_cases": similar_cases,
         }
 
     # -----------------------------------------

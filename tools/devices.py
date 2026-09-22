@@ -9,7 +9,7 @@ without interpreting shared devices as fraud.
 from typing import Any
 from langchain_core.tools import tool
 
-from .data_store import DataStore
+from .hhgoa_data import unavailable
 
 
 @tool
@@ -40,12 +40,11 @@ def get_device_connections(
         A dictionary containing associated customers, cards, transactions,
         linked fraud cases, sharing metrics, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_device_connections(
-        customer_id=str(customer_id).strip() if customer_id else None,
-        card_id=str(card_id).strip() if card_id else None,
-        device_id=str(device_id).strip() if device_id else None,
-    )
+    return unavailable("device_neighbors_require_device_profile_id") | {
+        "customer_id": customer_id,
+        "card_id": card_id,
+        "device_id": device_id,
+    }
 
 
 @tool
@@ -70,6 +69,5 @@ def get_customer_device_history(customer_id: str) -> dict[str, Any]:
         A dictionary containing historical device timelines, configurations,
         usage frequencies, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_customer_device_history(str(customer_id).strip())
+    return unavailable("identity_device_history_not_available_for_customer") | {"customer_id": str(customer_id).strip()}
 

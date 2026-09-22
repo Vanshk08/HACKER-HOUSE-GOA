@@ -118,7 +118,7 @@ class AutonomousInvestigatorLLM:
             )
 
         # Step 4: Graph connectivity (devices and shared origins)
-        missing_graph = [t for t in ["get_device_connections", "find_shared_origins"] if t not in executed_tools]
+        missing_graph = [t for t in ["get_device_connections", "find_shared_origins", "investigate_transaction_graph"] if t not in executed_tools]
         if missing_graph:
             tool_calls = []
             if "get_device_connections" not in executed_tools:
@@ -127,6 +127,9 @@ class AutonomousInvestigatorLLM:
             if "find_shared_origins" not in executed_tools:
                 tool_calls.append({"name": "find_shared_origins", "args": {"customer_id": cust_id}, "id": "call_so"})
                 self.tool_sequence.append("find_shared_origins")
+            if "investigate_transaction_graph" not in executed_tools:
+                tool_calls.append({"name": "investigate_transaction_graph", "args": {"transaction_id": flagged_txn_id}, "id": "call_tg"})
+                self.tool_sequence.append("investigate_transaction_graph")
 
             return AIMessage(
                 content=f"Exploring graph connections for shared devices, shared origins, or connected cards for {cust_id}.",
