@@ -31,6 +31,7 @@ CRITICAL EVALUATION PRINCIPLES:
    Base your assessment strictly on the concrete evidence collected.
    Never invent IDs, card numbers, transaction amounts, exposure values, or evidence.
    Every transaction ID cited must be verified from actual investigation evidence.
+   Your reasoning must summarize the evidence actually available to the investigator.
 
 2. COMPETING EXPLANATIONS:
    Rigorously evaluate both fraudulent and legitimate explanations.
@@ -68,44 +69,61 @@ VERDICT DEFINITIONS:
 - 'suspected_fraud': Strong indicators of fraud exist, but some uncertainty or missing data prevents absolute confirmation.
 - 'uncertain': Evidence is conflicting, inconclusive, or insufficient to distinguish legitimate from fraudulent activity.
 - 'legitimate': Evidence demonstrates authorized activity consistent with normal customer behavior.
+
+MANDATORY ASSESSMENT SCHEMA REQUIREMENTS:
+You MUST produce a complete structured assessment JSON object adhering to AssessmentSchema.
+Every single one of the following 9 fields is MANDATORY and MUST be present in your output:
+1. "verdict": Exactly one of: 'confirmed_fraud', 'suspected_fraud', 'uncertain', 'legitimate'.
+2. "fraud_probability": Float between 0.0 and 1.0 representing assessed probability of fraud. Must be derived independently from the investigation findings, never copied from the trigger risk score.
+3. "fraud_type": Specific fraud category string if applicable (e.g. 'card_cloning', 'account_takeover', 'friendly_fraud'), or null if legitimate or uncertain.
+4. "exposure": Float total USD amount at risk from verified transactions (must be 0.0 for legitimate cases).
+5. "affected_txn_ids": List of verified affected transaction ID strings ([] for legitimate cases). Never invent IDs.
+6. "supporting_evidence": List of specific factual strings supporting the verdict.
+7. "contradicting_evidence": List of specific factual strings contradicting fraud or supporting legitimate customer activity.
+8. "reasoning": Comprehensive evaluation string explaining how the evidence led to this verdict, evaluating competing explanations and addressing uncertainty. Summarize the concrete evidence actually available to the investigator. NEVER omit this field.
+9. "confidence": Float between 0.0 and 1.0 representing your certainty in the assessment itself (e.g., 0.90-0.95 for clear legitimate activity or confirmed fraud, lower for uncertain cases). This MUST reflect confidence in the assessment and NOT simply equal fraud_probability. NEVER omit this field.
 """
 
 
 class AssessmentSchema(BaseModel):
     verdict: VerdictType = Field(
-        description="Verdict: 'confirmed_fraud', 'suspected_fraud', 'uncertain', or 'legitimate'."
+        ...,
+        description="Verdict: 'confirmed_fraud', 'suspected_fraud', 'uncertain', or 'legitimate'. Mandatory.",
     )
     fraud_probability: float = Field(
-        description="Evidence-based fraud probability between 0.0 and 1.0 derived from gathered investigation evidence. Not the original risk score.",
+        ...,
+        description="Evidence-based fraud probability between 0.0 and 1.0 derived from gathered investigation evidence. Not the original risk score. Mandatory.",
         ge=0.0,
         le=1.0,
     )
     fraud_type: str | None = Field(
-        default=None,
-        description="Specific category of fraud if applicable (e.g., 'account_takeover', 'card_cloning', 'identity_theft', 'friendly_fraud', 'credential_stuffing', or None).",
+        ...,
+        description="Specific category of fraud if applicable (e.g., 'account_takeover', 'card_cloning', 'identity_theft', 'friendly_fraud', 'credential_stuffing', or null/None). Mandatory.",
     )
     exposure: float = Field(
-        default=0.0,
-        description="Known monetary amount at risk or flagged transaction exposure. Must derive strictly from verified transactions.",
+        ...,
+        description="Known monetary amount at risk or flagged transaction exposure (0.0 for legitimate). Must derive strictly from verified transactions. Mandatory.",
         ge=0.0,
     )
     affected_txn_ids: list[str] = Field(
-        default_factory=list,
-        description="List of verified affected transaction IDs from the actual dataset. Fabricated IDs will be rejected.",
+        ...,
+        description="List of verified affected transaction IDs from the actual dataset ([] for legitimate). Fabricated IDs will be rejected. Mandatory.",
     )
     supporting_evidence: list[str] = Field(
-        default_factory=list,
-        description="Specific observations and evidence items supporting the verdict.",
+        ...,
+        description="Specific observations and evidence items supporting the verdict. Mandatory.",
     )
     contradicting_evidence: list[str] = Field(
-        default_factory=list,
-        description="Specific observations contradicting fraud or supporting legitimate customer activity.",
+        ...,
+        description="Specific observations contradicting fraud or supporting legitimate customer activity. Mandatory.",
     )
     reasoning: str = Field(
-        description="Comprehensive evaluation explaining how the evidence led to this verdict, evaluating competing explanations and addressing uncertainty."
+        ...,
+        description="Comprehensive evaluation explaining how the evidence led to this verdict, evaluating competing explanations and addressing uncertainty. Must summarize evidence actually available to the investigator. Mandatory.",
     )
     confidence: float = Field(
-        description="Confidence level in this assessment between 0.0 and 1.0.",
+        ...,
+        description="Confidence level in this assessment between 0.0 and 1.0. Reflects confidence in the assessment itself, NOT fraud_probability. Mandatory.",
         ge=0.0,
         le=1.0,
     )
@@ -201,7 +219,19 @@ OUTSTANDING EVIDENCE REQUESTS:
 TOOLS USED DURING INVESTIGATION:
 {tools_used}
 
-Evaluate all gathered evidence and produce the structured Assessment."""
+MANDATORY ASSESSMENT SCHEMA REQUIREMENTS:
+You MUST provide ALL 9 fields in your structured AssessmentSchema output without omission:
+- "verdict": 'confirmed_fraud' | 'suspected_fraud' | 'uncertain' | 'legitimate'
+- "fraud_probability": float between 0.0 and 1.0 (evidence-based, not copied from risk_score)
+- "fraud_type": string or null
+- "exposure": float (0.0 if legitimate)
+- "affected_txn_ids": list of strings ([] if legitimate)
+- "supporting_evidence": list of strings
+- "contradicting_evidence": list of strings
+- "reasoning": mandatory comprehensive summary of the concrete evidence and evaluation
+- "confidence": mandatory float between 0.0 and 1.0 reflecting assessment certainty (NOT fraud_probability)
+
+Evaluate all gathered evidence and produce the complete 9-field structured Assessment."""
 
     def _normalize_assessment(self, raw_output: Any, state: dict) -> Assessment:
         data: dict[str, Any] = {}

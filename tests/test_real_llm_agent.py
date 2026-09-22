@@ -14,6 +14,7 @@ Tests:
 
 import os
 import sys
+import json
 import unittest
 from unittest.mock import patch
 from langchain_core.messages import AIMessage, HumanMessage
@@ -279,6 +280,57 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertTrue(0.0 <= ass["confidence"] <= 1.0)
         self.assertEqual(ass["affected_txn_ids"], ["3514030"])
         self.assertEqual(ass["exposure"], 77.07)
+
+    def test_gemini_structured_assessment_omitting_reasoning_confidence_fails_validation(self):
+        """
+        Regression test: Verify that if Gemini returns a response omitting reasoning or confidence,
+        the production AssessmentSchema validation path raises a clear ValidationError
+        rather than silently accepting malformed output or inventing values.
+        """
+        from pydantic import ValidationError
+        from langchain_core.output_parsers import PydanticOutputParser
+        from langchain_core.exceptions import OutputParserException
+
+        # Mock Gemini-style response that omits reasoning and confidence (as seen in HHG-001 regression)
+        gemini_malformed_response = {
+            "verdict": "legitimate",
+            "fraud_probability": 0.05,
+            "fraud_type": None,
+            "exposure": 0.0,
+            "affected_txn_ids": [],
+            "supporting_evidence": [
+                "15 prior transactions in region 444 totaling $1,049.26.",
+                "Transaction amount of $77.07 matches historical spend pattern.",
+            ],
+            "contradicting_evidence": [],
+        }
+
+        # 1. Direct AssessmentSchema validation must fail
+        with self.assertRaises(ValidationError) as ctx:
+            AssessmentSchema(**gemini_malformed_response)
+
+        err_str = str(ctx.exception)
+        self.assertIn("reasoning", err_str)
+        self.assertIn("confidence", err_str)
+
+        # 2. Output parser validation must fail
+        parser = PydanticOutputParser(pydantic_object=AssessmentSchema)
+        with self.assertRaises((ValidationError, OutputParserException)):
+            parser.parse(json.dumps(gemini_malformed_response))
+
+        # 3. Execution via AssessmentAgent node with structured output wrapper must raise
+        class MockGeminiOmittingFields:
+            def with_structured_output(self, schema):
+                class StructuredWrapper:
+                    def invoke(self, messages):
+                        p = PydanticOutputParser(pydantic_object=schema)
+                        return p.parse(json.dumps(gemini_malformed_response))
+                return StructuredWrapper()
+
+        agent = AssessmentAgent(MockGeminiOmittingFields())
+        state = create_initial_state("HHG-001", "C12382", "C12382-K1", "3514030")
+        with self.assertRaises((ValidationError, OutputParserException)):
+            agent.node(state)
 
     # ----------------------------------------------------------------------
     # 4. INDEPENDENT FRAUD PROBABILITY TESTS
