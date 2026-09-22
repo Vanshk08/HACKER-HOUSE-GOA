@@ -157,13 +157,19 @@ class FraudAnalyzer:
         region_evidence = []
         region_id = self.client.region_id_from_attributes(attrs)
         if region_id:
-            for block in self.client.get_region_neighbors(region_id):
-                region_evidence.extend(block.get("region", []))
+            try:
+                for block in self.client.get_region_neighbors(region_id):
+                    region_evidence.extend(block.get("region", []))
+            except Exception:
+                region_evidence = []
 
         similar_cases = []
         if customer_id:
-            for block in self.client.get_similar_closed_cases(customer_id, "out_of_region_use"):
-                similar_cases.extend(block.get("cases", []))
+            try:
+                for block in self.client.get_similar_closed_cases(customer_id, "out_of_region_use"):
+                    similar_cases.extend(block.get("cases", []))
+            except Exception:
+                similar_cases = []
 
         # HHGOA has no identity row or email value for some transactions. Only
         # expose evidence returned by the graph; never infer missing identities.
@@ -171,8 +177,11 @@ class FraudAnalyzer:
         for field in ("P_emaildomain", "R_emaildomain"):
             domain = str(attrs.get(field, "") or "").strip()
             if domain:
-                for block in self.client.get_email_domain_neighbors("domain:" + domain.lower()):
-                    email_evidence.extend(block.get("email", []))
+                try:
+                    for block in self.client.get_email_domain_neighbors("domain:" + domain.lower()):
+                        email_evidence.extend(block.get("email", []))
+                except Exception:
+                    continue
 
         # -----------------------------------------
         # 6. FINAL RESPONSE

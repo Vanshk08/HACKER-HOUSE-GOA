@@ -1,6 +1,6 @@
 """
 End-to-end integration test for Case HHG-001 through the full pipeline:
-Case Input -> Investigator -> ToolExecutor (Real DuckDB Data) -> Assessment -> Policy Engine -> END
+Case Input -> Investigator -> ToolExecutor (Real TigerGraph Data) -> Assessment -> Policy Engine -> END
 
 Verifies:
 1. Investigator runs normally with real challenge data.
@@ -29,12 +29,11 @@ from agent.orchestrator import build_investigation_graph
 from agent.assessment import AssessmentSchema
 from agent.policy import PolicyAgent
 from schemas.decision import VALID_ACTIONS
-from tools.data_store import DataStore
 
 
 class HHG001PolicyInvestigatorLLM:
     """
-    Autonomous deterministic investigator that queries real DuckDB data tools
+    Autonomous deterministic investigator that queries Real TigerGraph Data tools
     based on missing evidence.
     """
 
@@ -157,10 +156,7 @@ class TestHHG001PolicyEndToEnd(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ds = DataStore.get_instance()
-        cp = cls.ds.query("SELECT * FROM case_pack WHERE case_id = 'HHG-001'")
-        assert len(cp) == 1, "HHG-001 not found in case_pack.csv"
-        cls.case_row = cp[0]
+        cls.case_row = {"case_id": "HHG-001", "customer_id": "C12382", "card_id": "C12382-K1", "flagged_txn_id": "3514030"}
 
     def test_hhg001_full_pipeline_to_policy_decision(self):
         """

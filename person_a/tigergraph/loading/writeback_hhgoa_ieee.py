@@ -56,8 +56,6 @@ def write_case(
         "card_id": card_id,
         "outcome": outcome,
         "pattern": pattern,
-        "opened_at": opened_at,
-        "closed_at": closed_at,
         "first_fraud_txn_id": first_fraud_txn_id,
         "txn_ids": "|".join(transaction_ids),
         "n_txns": len(transaction_ids),
@@ -67,6 +65,10 @@ def write_case(
         "report_filed": bool(report_filed),
         "analyst_notes": analyst_notes,
     }
+    if opened_at:
+        attributes["opened_at"] = opened_at
+    if closed_at:
+        attributes["closed_at"] = closed_at
     vertex_result = client.upsertVertex("HHGOA_ClosedCase", case_id, attributes)
     edge_count = 0
     for transaction_id in transaction_ids:

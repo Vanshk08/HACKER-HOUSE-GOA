@@ -9,7 +9,7 @@ Retrieves factual observed data only without interpreting fraud.
 from typing import Any
 from langchain_core.tools import tool
 
-from .data_store import DataStore
+from .hhgoa_data import card_history, unavailable
 
 
 @tool
@@ -34,8 +34,7 @@ def get_card_history(card_id: str) -> dict[str, Any]:
         A dictionary containing historical transaction records, spending metrics,
         observed regions/channels, previous cases, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_card_history(str(card_id).strip())
+    return card_history(str(card_id).strip())
 
 
 @tool
@@ -59,6 +58,5 @@ def get_connected_cards(card_id: str) -> dict[str, Any]:
         A dictionary containing connected cards, connection topologies,
         shared entities, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_connected_cards(str(card_id).strip())
+    return unavailable("connected_card_relationships") | {"card_id": str(card_id).strip()}
 

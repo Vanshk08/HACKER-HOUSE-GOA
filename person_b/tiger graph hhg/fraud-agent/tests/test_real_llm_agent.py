@@ -14,6 +14,7 @@ Tests:
 
 import os
 import sys
+import json
 import unittest
 from unittest.mock import patch
 from langchain_core.messages import AIMessage, HumanMessage
@@ -22,7 +23,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from agent.llm_config import get_llm_config, LLMConfig
+from agent.llm_config import get_llm_config, LLMConfig, create_llm
 from agent.llm_engine import (
     AutonomousInvestigatorLLM,
     AutonomousAssessmentLLM,
@@ -30,6 +31,7 @@ from agent.llm_engine import (
     MockAssessmentLLM,
     get_investigator_llm,
     get_assessment_llm,
+    create_gemini_llm,
 )
 from agent.investigator import InvestigationAgent
 from agent.tool_executor import ToolExecutor
@@ -37,7 +39,6 @@ from agent.assessment import AssessmentAgent, AssessmentSchema
 from agent.orchestrator import build_investigation_graph
 from agent.state import create_initial_state
 from config.policy import evaluate_policy
-from tools.data_store import DataStore
 
 
 class TestRealLLMAgent(unittest.TestCase):
@@ -101,6 +102,86 @@ class TestRealLLMAgent(unittest.TestCase):
             get_llm_config()
         self.assertIn("ANTHROPIC_API_KEY is missing", str(ctx.exception))
         self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
+
+    def test_provider_configuration_gemini_with_key(self):
+        """Test gemini provider when API key is present."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-12345"
+        os.environ["GEMINI_MODEL"] = "gemini-2.5-flash"
+        cfg = get_llm_config()
+        self.assertEqual(cfg.provider, "gemini")
+        self.assertEqual(cfg.model, "gemini-2.5-flash")
+        self.assertEqual(cfg.api_key, "fake-gemini-key-12345")
+
+    def test_provider_configuration_gemini_missing_key_raises(self):
+        """Test that missing Gemini API key raises and does NOT silently fall back to mock."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        if "GEMINI_API_KEY" in os.environ:
+            del os.environ["GEMINI_API_KEY"]
+
+        with self.assertRaises(ValueError) as ctx:
+            get_llm_config()
+        self.assertIn("GEMINI_API_KEY is missing", str(ctx.exception))
+        self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
+
+    def test_provider_configuration_gemini_model_read_correctly(self):
+        """Test that GEMINI_MODEL is read correctly from environment."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-12345"
+        os.environ["GEMINI_MODEL"] = "gemini-2.5-pro"
+        cfg = get_llm_config()
+        self.assertEqual(cfg.model, "gemini-2.5-pro")
+
+    def test_provider_configuration_gemini_default_model(self):
+        """Test that default Gemini model is used when GEMINI_MODEL is unset."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-12345"
+        if "GEMINI_MODEL" in os.environ:
+            del os.environ["GEMINI_MODEL"]
+        cfg = get_llm_config()
+        self.assertEqual(cfg.model, "gemini-3.6-flash")
+
+    def test_provider_selection_does_not_expose_secrets(self):
+        """Test that provider selection and LLMConfig do not expose API secrets in repr or str."""
+        test_cases = [
+            ("gemini", "GEMINI_API_KEY", "super-secret-gemini-key-xyz"),
+            ("openai", "OPENAI_API_KEY", "super-secret-openai-key-abc"),
+            ("anthropic", "ANTHROPIC_API_KEY", "super-secret-anthropic-key-def"),
+        ]
+        for prov, key_var, secret in test_cases:
+            os.environ["LLM_PROVIDER"] = prov
+            os.environ[key_var] = secret
+            cfg = get_llm_config()
+            self.assertNotIn(secret, repr(cfg), f"Secret exposed in repr for provider {prov}")
+            self.assertNotIn(secret, str(cfg), f"Secret exposed in str for provider {prov}")
+
+    def test_gemini_model_instantiation_and_capabilities(self):
+        """Test constructing Gemini model without making live API calls."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-for-test"
+        os.environ["GEMINI_MODEL"] = "gemini-2.5-flash"
+        cfg = get_llm_config()
+        llm = create_llm(cfg)
+        self.assertEqual(type(llm).__name__, "ChatGoogleGenerativeAI")
+        self.assertEqual(llm.model, "gemini-2.5-flash")
+        self.assertTrue(hasattr(llm, "bind_tools"))
+        self.assertTrue(hasattr(llm, "with_structured_output"))
+
+        # Test create_gemini_llm convenience function
+        gemini_llm = create_gemini_llm(cfg)
+        self.assertEqual(type(gemini_llm).__name__, "ChatGoogleGenerativeAI")
+
+    def test_gemini_investigator_and_assessment_tool_binding(self):
+        """Test that Gemini model binds investigation tools and structured output schema."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-for-test"
+        os.environ["GEMINI_MODEL"] = "gemini-2.5-flash"
+
+        inv_llm = get_investigator_llm(provider="gemini")
+        self.assertTrue(hasattr(inv_llm, "invoke"))
+
+        ass_llm = get_assessment_llm(provider="gemini")
+        self.assertTrue(hasattr(ass_llm, "invoke"))
 
     def test_provider_configuration_unset_raises(self):
         """Test that unset LLM_PROVIDER raises ValueError and never silently defaults to mock."""
@@ -198,6 +279,57 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertTrue(0.0 <= ass["confidence"] <= 1.0)
         self.assertEqual(ass["affected_txn_ids"], ["3514030"])
         self.assertEqual(ass["exposure"], 77.07)
+
+    def test_gemini_structured_assessment_omitting_reasoning_confidence_fails_validation(self):
+        """
+        Regression test: Verify that if Gemini returns a response omitting reasoning or confidence,
+        the production AssessmentSchema validation path raises a clear ValidationError
+        rather than silently accepting malformed output or inventing values.
+        """
+        from pydantic import ValidationError
+        from langchain_core.output_parsers import PydanticOutputParser
+        from langchain_core.exceptions import OutputParserException
+
+        # Mock Gemini-style response that omits reasoning and confidence (as seen in HHG-001 regression)
+        gemini_malformed_response = {
+            "verdict": "legitimate",
+            "fraud_probability": 0.05,
+            "fraud_type": None,
+            "exposure": 0.0,
+            "affected_txn_ids": [],
+            "supporting_evidence": [
+                "15 prior transactions in region 444 totaling $1,049.26.",
+                "Transaction amount of $77.07 matches historical spend pattern.",
+            ],
+            "contradicting_evidence": [],
+        }
+
+        # 1. Direct AssessmentSchema validation must fail
+        with self.assertRaises(ValidationError) as ctx:
+            AssessmentSchema(**gemini_malformed_response)
+
+        err_str = str(ctx.exception)
+        self.assertIn("reasoning", err_str)
+        self.assertIn("confidence", err_str)
+
+        # 2. Output parser validation must fail
+        parser = PydanticOutputParser(pydantic_object=AssessmentSchema)
+        with self.assertRaises((ValidationError, OutputParserException)):
+            parser.parse(json.dumps(gemini_malformed_response))
+
+        # 3. Execution via AssessmentAgent node with structured output wrapper must raise
+        class MockGeminiOmittingFields:
+            def with_structured_output(self, schema):
+                class StructuredWrapper:
+                    def invoke(self, messages):
+                        p = PydanticOutputParser(pydantic_object=schema)
+                        return p.parse(json.dumps(gemini_malformed_response))
+                return StructuredWrapper()
+
+        agent = AssessmentAgent(MockGeminiOmittingFields())
+        state = create_initial_state("HHG-001", "C12382", "C12382-K1", "3514030")
+        with self.assertRaises((ValidationError, OutputParserException)):
+            agent.node(state)
 
     # ----------------------------------------------------------------------
     # 4. INDEPENDENT FRAUD PROBABILITY TESTS
@@ -441,6 +573,95 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertIn(ass["verdict"], ["confirmed_fraud", "suspected_fraud", "uncertain", "legitimate"])
         self.assertEqual(ass["affected_txn_ids"], ["3514030"])
         self.assertAlmostEqual(ass["exposure"], 77.07, places=2)
+
+    # ----------------------------------------------------------------------
+    # 10. GEMINI PROVIDER SIMULATION TESTS
+    # ----------------------------------------------------------------------
+    def test_gemini_provider_simulated_multi_cycle_and_assessment(self):
+        """
+        Verify that an agent configured for Gemini runs through the full
+        orchestration architecture (Investigator -> ToolExecutor -> Investigator -> Assessment -> Policy)
+        when model responses are returned (no live API calls made).
+        """
+        os.environ["LLM_PROVIDER"] = "gemini"
+        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-for-test"
+
+        # Mock investigator that simulates Gemini tool-calling behavior
+        class MockGeminiInvestigator:
+            def __init__(self):
+                self.calls = 0
+
+            def bind_tools(self, tools):
+                return self
+
+            def invoke(self, messages):
+                self.calls += 1
+                if self.calls == 1:
+                    return AIMessage(
+                        content="Gemini investigating flagged transaction.",
+                        tool_calls=[{
+                            "name": "get_transaction",
+                            "args": {"transaction_id": "3514030"},
+                            "id": "gemini_call_001",
+                        }]
+                    )
+                return AIMessage(
+                    content="Gemini completed investigation analysis.",
+                    tool_calls=[],
+                    additional_kwargs={
+                        "hypotheses": [
+                            {
+                                "id": "hyp_gemini_1",
+                                "title": "Suspected Unauthorized Access",
+                                "description": "Flagged transaction in unusual channel",
+                                "confidence": 0.75,
+                                "supporting_evidence": ["Risk score 0.61"],
+                                "contradicting_evidence": [],
+                            }
+                        ]
+                    }
+                )
+
+        class MockGeminiAssessment:
+            def with_structured_output(self, schema):
+                return self
+
+            def invoke(self, messages):
+                return AssessmentSchema(
+                    verdict="uncertain",
+                    fraud_probability=0.48,
+                    fraud_type=None,
+                    exposure=77.07,
+                    affected_txn_ids=["3514030"],
+                    supporting_evidence=["Transaction flagged by monitoring"],
+                    contradicting_evidence=["Customer account active"],
+                    reasoning="Gemini assessment concluding uncertain pending customer validation.",
+                    confidence=0.65,
+                )
+
+        graph = build_investigation_graph(
+            llm=MockGeminiInvestigator(),
+            assessment_llm=MockGeminiAssessment(),
+        )
+
+        state = create_initial_state(
+            case_id="HHG-001",
+            customer_id="C12382",
+            card_id="C12382-K1",
+            flagged_txn_id="3514030",
+            trigger_type="risk_score",
+            risk_score=0.61,
+        )
+
+        final_state = graph.invoke(state)
+
+        # Assert full architecture executed cleanly
+        self.assertEqual(final_state["case_id"], "HHG-001")
+        self.assertIn("assessment", final_state)
+        self.assertIn("policy_decision", final_state)
+        self.assertEqual(final_state["assessment"]["verdict"], "uncertain")
+        self.assertEqual(final_state["assessment"]["affected_txn_ids"], ["3514030"])
+        self.assertAlmostEqual(final_state["assessment"]["exposure"], 77.07, places=2)
 
 
 if __name__ == "__main__":

@@ -11,3 +11,5 @@ scratch/
 *.duckdb
 
 data/*.csv
+data/raw/
+results_*/

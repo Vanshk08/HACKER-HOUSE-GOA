@@ -10,7 +10,7 @@ state, or real-world geographic location. Does not classify region changes as fr
 from typing import Any
 from langchain_core.tools import tool
 
-from .data_store import DataStore
+from .hhgoa_data import customer_regions, region_activity
 
 
 @tool
@@ -43,8 +43,7 @@ def get_region_activity(
         A dictionary containing historical transactions, counts, timestamps,
         amounts, cards used in this region, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_region_activity(str(customer_id).strip(), str(region).strip())
+    return region_activity(str(customer_id).strip(), str(region).strip())
 
 
 @tool
@@ -68,6 +67,5 @@ def get_customer_regions(customer_id: str) -> dict[str, Any]:
         A dictionary containing all historical billing regions, transaction counts,
         temporal spans, primary region calculations, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_customer_regions(str(customer_id).strip())
+    return customer_regions(str(customer_id).strip())
 

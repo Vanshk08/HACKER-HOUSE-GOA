@@ -9,7 +9,7 @@ Retrieves factual observed data only without interpreting fraud.
 from typing import Any
 from langchain_core.tools import tool
 
-from .data_store import DataStore
+from .hhgoa_data import customer_cards, customer_history
 
 
 @tool
@@ -35,8 +35,7 @@ def get_customer_history(customer_id: str) -> dict[str, Any]:
         A dictionary containing observed historical customer data,
         behavioral summary calculations, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_customer_history(str(customer_id).strip())
+    return customer_history(str(customer_id).strip())
 
 
 @tool
@@ -59,6 +58,5 @@ def get_customer_cards(customer_id: str) -> dict[str, Any]:
         A dictionary containing associated cards, transaction counts,
         historical summaries, and backend status.
     """
-    ds = DataStore.get_instance()
-    return ds.get_customer_cards(str(customer_id).strip())
+    return customer_cards(str(customer_id).strip())
 

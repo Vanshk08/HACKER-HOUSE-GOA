@@ -2,7 +2,7 @@
 Batch runner for executing all 20 real challenge cases from data/case_pack.csv.
 
 Orchestrates:
-case_pack.csv -> Investigator <-> ToolExecutor (DuckDB) -> Assessment -> Policy Engine -> Final Decision -> END
+case_pack.csv -> Investigator <-> ToolExecutor (TigerGraph/HHGOA_IEEE) -> Assessment -> Policy Engine -> Final Decision -> END
 
 Produces:
 results/
