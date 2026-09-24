@@ -51,7 +51,19 @@ async def _call_person_a_mcp_async(transaction_id: str) -> dict[str, Any]:
 
 def _call_person_a_mcp(transaction_id: str) -> dict[str, Any]:
     """Synchronously bridge the LangChain tool call to Person A's MCP server."""
-    return asyncio.run(_call_person_a_mcp_async(transaction_id))
+    try:
+        return asyncio.run(_call_person_a_mcp_async(transaction_id))
+    except Exception:
+        try:
+            from person_a.retrieval.fraud_analyzer import FraudAnalyzer
+            return FraudAnalyzer().analyze(str(transaction_id).strip())
+        except Exception as e:
+            return {
+                "transaction_id": transaction_id,
+                "status": "unavailable",
+                "message": f"Person A MCP graph service unavailable: {str(e)}",
+                "found": False,
+            }
 
 
 @tool

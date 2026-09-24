@@ -20,6 +20,12 @@ import time
 import argparse
 from typing import Any, Optional
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Ensure project root is on sys.path
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 if PROJECT_ROOT not in sys.path:
@@ -310,7 +316,7 @@ def run_all_cases(
     selected_provider = provider or os.getenv("LLM_PROVIDER")
     if not selected_provider:
         raise ValueError(
-            "No LLM provider configured. You must set LLM_PROVIDER=openai|anthropic|gemini|mock "
+            "No LLM provider configured. You must set LLM_PROVIDER=openrouter|vertex|openai|anthropic|mock "
             "in your environment or pass --provider <provider>."
         )
 
@@ -474,7 +480,7 @@ def run_all_cases(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run all fraud investigation cases")
-    parser.add_argument("--provider", default=os.getenv("LLM_PROVIDER"), help="LLM Provider: openai, anthropic, gemini, or mock")
+    parser.add_argument("--provider", default=os.getenv("LLM_PROVIDER"), help="LLM Provider: openrouter, vertex, openai, anthropic, or mock")
     parser.add_argument("--csv", default="data/case_pack.csv", help="Path to case_pack.csv")
     parser.add_argument("--out", default="results", help="Output directory")
     parser.add_argument("--case-id", help="Run only the specified case ID")

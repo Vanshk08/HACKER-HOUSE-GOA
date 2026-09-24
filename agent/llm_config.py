@@ -1,6 +1,6 @@
 """
 Provider abstraction and configuration for Real and Mock LLMs.
-Supports OpenAI, Anthropic, Gemini, and explicit Mock modes via environment variables.
+Supports Vertex AI, OpenAI, Anthropic, and explicit Mock modes via environment variables.
 """
 
 import os
@@ -16,9 +16,12 @@ except ImportError:
 
 @dataclass
 class LLMConfig:
-    provider: str  # "openai", "anthropic", "gemini", "mock"
+    provider: str  # "vertex", "openai", "anthropic", "mock"
     model: str
     api_key: Optional[str] = None
+    project: Optional[str] = None
+    location: Optional[str] = None
+    credentials: Optional[Any] = None
     temperature: float = 0.0
     max_tokens: int = 2048
 
@@ -26,7 +29,8 @@ class LLMConfig:
         masked_key = "***" if self.api_key else None
         return (
             f"LLMConfig(provider={self.provider!r}, model={self.model!r}, "
-            f"api_key={masked_key!r}, temperature={self.temperature}, "
+            f"api_key={masked_key!r}, project={self.project!r}, "
+            f"location={self.location!r}, temperature={self.temperature}, "
             f"max_tokens={self.max_tokens})"
         )
 
@@ -39,9 +43,9 @@ def get_llm_config(provider: Optional[str] = None) -> LLMConfig:
     Load LLM configuration from environment variables.
     
     Rules:
-    - Supported providers: 'openai', 'anthropic', 'gemini', 'mock'.
+    - Supported providers: 'openrouter', 'vertex', 'openai', 'anthropic', 'mock'.
     - Provider must be specified explicitly (either via `provider` parameter or `LLM_PROVIDER` env var).
-    - NEVER silently fall back to mock when a live provider is selected but its API key is missing.
+    - NEVER silently fall back to mock when a live provider is selected but its configuration is missing.
     - Mock mode must only be selected explicitly.
     """
     selected_provider = provider
@@ -51,7 +55,7 @@ def get_llm_config(provider: Optional[str] = None) -> LLMConfig:
     if not selected_provider or not selected_provider.strip():
         raise ValueError(
             "LLM_PROVIDER environment variable is not set. "
-            "Must be explicitly set to 'openai', 'anthropic', 'gemini', or 'mock'."
+            "Must be explicitly set to 'openrouter', 'vertex', 'openai', 'anthropic', or 'mock'."
         )
 
     prov = selected_provider.strip().lower()
@@ -69,7 +73,64 @@ def get_llm_config(provider: Optional[str] = None) -> LLMConfig:
     except (ValueError, TypeError):
         max_tokens = 2048
 
-    if prov == "openai":
+    if prov == "openrouter":
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key or not api_key.strip():
+            raise ValueError(
+                "OPENROUTER_API_KEY is missing or empty. Live provider 'openrouter' was selected, "
+                "so a valid API key is required. Silent fallback to mock is prohibited."
+            )
+        model = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
+        if not model or not model.strip():
+            model = "google/gemini-2.5-flash"
+
+        return LLMConfig(
+            provider="openrouter",
+            model=model.strip(),
+            api_key=api_key.strip(),
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+    elif prov == "vertex":
+        vertex_api_key = os.getenv("VERTEX_API_KEY")
+        if vertex_api_key and vertex_api_key.strip():
+            api_key = vertex_api_key.strip()
+        else:
+            api_key = None
+
+        project = os.getenv("VERTEX_PROJECT")
+        if not project or not project.strip():
+            if not api_key:
+                project = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT")
+                if not project or not project.strip():
+                    raise ValueError(
+                        "GOOGLE_CLOUD_PROJECT is missing or empty. Live provider 'vertex' was selected, "
+                        "so a valid Google Cloud project is required. Silent fallback to mock is prohibited."
+                    )
+            else:
+                project = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT")
+
+        model = os.getenv("VERTEX_MODEL")
+        if not model or not model.strip():
+            raise ValueError(
+                "VERTEX_MODEL is missing or empty. Live provider 'vertex' was selected, "
+                "so a valid model name is required (e.g. 'gemini-1.5-flash'). Silent fallback to mock is prohibited."
+            )
+
+        location = os.getenv("GOOGLE_CLOUD_LOCATION") or os.getenv("VERTEX_LOCATION", "us-central1")
+
+        return LLMConfig(
+            provider="vertex",
+            model=model.strip(),
+            api_key=api_key,
+            project=project.strip() if project and project.strip() else None,
+            location=location.strip() if location else "us-central1",
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+    elif prov == "openai":
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key or not api_key.strip():
             raise ValueError(
@@ -102,19 +163,9 @@ def get_llm_config(provider: Optional[str] = None) -> LLMConfig:
         )
 
     elif prov == "gemini":
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key or not api_key.strip():
-            raise ValueError(
-                "GEMINI_API_KEY is missing or empty. Live provider 'gemini' was selected, "
-                "so a valid API key is required. Silent fallback to mock is prohibited."
-            )
-        model = os.getenv("GEMINI_MODEL") or "gemini-3.6-flash"
-        return LLMConfig(
-            provider="gemini",
-            model=model,
-            api_key=api_key.strip(),
-            temperature=temperature,
-            max_tokens=max_tokens,
+        raise ValueError(
+            "Provider 'gemini' (direct Google AI Studio inference) has been removed. "
+            "Please set LLM_PROVIDER=vertex and configure GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, and VERTEX_MODEL."
         )
 
     elif prov == "mock":
@@ -128,7 +179,7 @@ def get_llm_config(provider: Optional[str] = None) -> LLMConfig:
 
     else:
         raise ValueError(
-            f"Unsupported LLM_PROVIDER '{prov}'. Supported providers are: 'openai', 'anthropic', 'gemini', 'mock'."
+            f"Unsupported LLM_PROVIDER '{prov}'. Supported providers are: 'openrouter', 'vertex', 'openai', 'anthropic', 'mock'."
         )
 
 
@@ -139,7 +190,110 @@ def create_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
     if config is None:
         config = get_llm_config()
 
-    if config.provider == "openai":
+    if config.provider == "vertex":
+        api_key = kwargs.get("api_key") or config.api_key
+        if api_key:
+            try:
+                from langchain_google_genai import ChatGoogleGenerativeAI
+            except ImportError as e:
+                raise ImportError(
+                    "langchain-google-genai is required for Vertex AI Express Mode API-key authentication. "
+                    "Install langchain-google-genai."
+                ) from e
+
+            model_kwargs = dict(kwargs)
+            model_kwargs.pop("api_key", None)
+            model_name = model_kwargs.pop("model", model_kwargs.pop("model_name", config.model))
+            explicit_project = model_kwargs.pop(
+                "project",
+                os.getenv("VERTEX_PROJECT") or (None if os.getenv("VERTEX_API_KEY") else config.project),
+            )
+            location = model_kwargs.pop("location", config.location or "us-central1")
+            temperature = model_kwargs.pop("temperature", config.temperature)
+            max_output_tokens = model_kwargs.pop(
+                "max_output_tokens",
+                model_kwargs.pop("max_tokens", config.max_tokens),
+            )
+
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                llm = ChatGoogleGenerativeAI(
+                    model=model_name,
+                    api_key=api_key,
+                    vertexai=True,
+                    project=explicit_project,
+                    location=location if explicit_project else None,
+                    temperature=temperature,
+                    max_output_tokens=max_output_tokens,
+                    **model_kwargs,
+                )
+                try:
+                    from google.genai import Client
+                    client_kwargs = {"vertexai": True, "api_key": api_key}
+                    if explicit_project:
+                        client_kwargs["project"] = explicit_project
+                        if location:
+                            client_kwargs["location"] = location
+                    llm.client = Client(**client_kwargs)
+                except Exception:
+                    pass
+                return llm
+
+        try:
+            from langchain_google_vertexai import ChatVertexAI
+        except ImportError as e:
+            raise ImportError(
+                "langchain-google-vertexai is required for Vertex AI provider. "
+                "Install langchain-google-vertexai."
+            ) from e
+
+        model_kwargs = dict(kwargs)
+        project = model_kwargs.pop("project", config.project)
+        location = model_kwargs.pop("location", config.location or "us-central1")
+        credentials = model_kwargs.pop("credentials", config.credentials)
+        temperature = model_kwargs.pop("temperature", config.temperature)
+        max_output_tokens = model_kwargs.pop(
+            "max_output_tokens",
+            model_kwargs.pop("max_tokens", config.max_tokens),
+        )
+
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return ChatVertexAI(
+                model_name=config.model,
+                project=project,
+                location=location,
+                credentials=credentials,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+                **model_kwargs,
+            )
+
+    elif config.provider == "openrouter":
+        try:
+            from langchain_openrouter import ChatOpenRouter
+        except ImportError as e:
+            raise ImportError(
+                "langchain-openrouter is required for OpenRouter provider. Install langchain-openrouter."
+            ) from e
+
+        model_kwargs = dict(kwargs)
+        model_name = model_kwargs.pop("model", model_kwargs.pop("model_name", config.model))
+        temperature = model_kwargs.pop("temperature", config.temperature)
+        max_tokens = model_kwargs.pop("max_tokens", config.max_tokens)
+        api_key = model_kwargs.pop("api_key", config.api_key)
+
+        return ChatOpenRouter(
+            model=model_name,
+            api_key=api_key,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **model_kwargs,
+        )
+
+    elif config.provider == "openai":
         try:
             from langchain_openai import ChatOpenAI
         except ImportError as e:
@@ -168,25 +322,9 @@ def create_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
         )
 
     elif config.provider == "gemini":
-        try:
-            from langchain_google_genai import ChatGoogleGenerativeAI
-        except ImportError as e:
-            raise ImportError("langchain-google-genai is required for Gemini provider. Install langchain-google-genai.") from e
-
-        model_kwargs = dict(kwargs)
-        api_key = model_kwargs.pop("api_key", config.api_key)
-        temperature = model_kwargs.pop("temperature", config.temperature)
-        max_output_tokens = model_kwargs.pop(
-            "max_output_tokens",
-            model_kwargs.pop("max_tokens", config.max_tokens),
-        )
-
-        return ChatGoogleGenerativeAI(
-            model=config.model,
-            api_key=api_key,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-            **model_kwargs,
+        raise ValueError(
+            "Provider 'gemini' (direct Google AI Studio inference) has been removed. "
+            "Please use provider 'vertex' with ChatVertexAI."
         )
 
     elif config.provider == "mock":
@@ -194,3 +332,4 @@ def create_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
         return MockInvestigatorLLM()
 
     raise ValueError(f"Unknown provider: {config.provider}")
+

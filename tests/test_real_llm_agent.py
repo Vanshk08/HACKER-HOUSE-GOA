@@ -31,7 +31,8 @@ from agent.llm_engine import (
     MockAssessmentLLM,
     get_investigator_llm,
     get_assessment_llm,
-    create_gemini_llm,
+    create_vertex_llm,
+    create_openrouter_llm,
 )
 from agent.investigator import InvestigationAgent
 from agent.tool_executor import ToolExecutor
@@ -45,6 +46,8 @@ class TestRealLLMAgent(unittest.TestCase):
 
     def setUp(self):
         self.orig_env = dict(os.environ)
+        for key in ["VERTEX_API_KEY", "OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "LLM_PROVIDER"]:
+            os.environ.pop(key, None)
 
     def tearDown(self):
         os.environ.clear()
@@ -60,6 +63,27 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertEqual(cfg.provider, "mock")
         self.assertEqual(cfg.model, "mock-investigator-v1")
         self.assertIsNone(cfg.api_key)
+
+    def test_provider_configuration_openrouter_with_key(self):
+        """Test openrouter provider when API key is present."""
+        os.environ["LLM_PROVIDER"] = "openrouter"
+        os.environ["OPENROUTER_API_KEY"] = "sk-or-v1-fake-key-12345"
+        os.environ["OPENROUTER_MODEL"] = "google/gemini-2.5-flash"
+        cfg = get_llm_config()
+        self.assertEqual(cfg.provider, "openrouter")
+        self.assertEqual(cfg.model, "google/gemini-2.5-flash")
+        self.assertEqual(cfg.api_key, "sk-or-v1-fake-key-12345")
+
+    def test_provider_configuration_openrouter_missing_key_raises(self):
+        """Test that missing OpenRouter API key raises and does NOT silently fall back to mock."""
+        os.environ["LLM_PROVIDER"] = "openrouter"
+        if "OPENROUTER_API_KEY" in os.environ:
+            del os.environ["OPENROUTER_API_KEY"]
+
+        with self.assertRaises(ValueError) as ctx:
+            get_llm_config()
+        self.assertIn("OPENROUTER_API_KEY is missing", str(ctx.exception))
+        self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
 
     def test_provider_configuration_openai_with_key(self):
         """Test openai provider when API key is present."""
@@ -103,84 +127,226 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertIn("ANTHROPIC_API_KEY is missing", str(ctx.exception))
         self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
 
-    def test_provider_configuration_gemini_with_key(self):
-        """Test gemini provider when API key is present."""
-        os.environ["LLM_PROVIDER"] = "gemini"
-        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-12345"
-        os.environ["GEMINI_MODEL"] = "gemini-2.5-flash"
+    def test_provider_configuration_vertex_with_project_and_model(self):
+        """Test vertex provider when project and model are present."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "test-gcp-project"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
         cfg = get_llm_config()
-        self.assertEqual(cfg.provider, "gemini")
-        self.assertEqual(cfg.model, "gemini-2.5-flash")
-        self.assertEqual(cfg.api_key, "fake-gemini-key-12345")
+        self.assertEqual(cfg.provider, "vertex")
+        self.assertEqual(cfg.model, "gemini-1.5-flash")
+        self.assertEqual(cfg.project, "test-gcp-project")
+        self.assertEqual(cfg.location, "us-central1")
 
-    def test_provider_configuration_gemini_missing_key_raises(self):
-        """Test that missing Gemini API key raises and does NOT silently fall back to mock."""
-        os.environ["LLM_PROVIDER"] = "gemini"
-        if "GEMINI_API_KEY" in os.environ:
-            del os.environ["GEMINI_API_KEY"]
+    def test_provider_configuration_vertex_missing_project_raises(self):
+        """Test that missing Google Cloud project raises and does NOT silently fall back to mock."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+        if "GOOGLE_CLOUD_PROJECT" in os.environ:
+            del os.environ["GOOGLE_CLOUD_PROJECT"]
+        if "GCP_PROJECT" in os.environ:
+            del os.environ["GCP_PROJECT"]
 
         with self.assertRaises(ValueError) as ctx:
             get_llm_config()
-        self.assertIn("GEMINI_API_KEY is missing", str(ctx.exception))
+        self.assertIn("GOOGLE_CLOUD_PROJECT is missing", str(ctx.exception))
         self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
 
-    def test_provider_configuration_gemini_model_read_correctly(self):
-        """Test that GEMINI_MODEL is read correctly from environment."""
-        os.environ["LLM_PROVIDER"] = "gemini"
-        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-12345"
-        os.environ["GEMINI_MODEL"] = "gemini-2.5-pro"
-        cfg = get_llm_config()
-        self.assertEqual(cfg.model, "gemini-2.5-pro")
+    def test_provider_configuration_vertex_missing_model_raises(self):
+        """Test that missing VERTEX_MODEL raises and does NOT silently fall back to mock."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "test-gcp-project"
+        if "VERTEX_MODEL" in os.environ:
+            del os.environ["VERTEX_MODEL"]
 
-    def test_provider_configuration_gemini_default_model(self):
-        """Test that default Gemini model is used when GEMINI_MODEL is unset."""
-        os.environ["LLM_PROVIDER"] = "gemini"
-        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-12345"
-        if "GEMINI_MODEL" in os.environ:
-            del os.environ["GEMINI_MODEL"]
+        with self.assertRaises(ValueError) as ctx:
+            get_llm_config()
+        self.assertIn("VERTEX_MODEL is missing", str(ctx.exception))
+        self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
+
+    def test_provider_configuration_vertex_custom_location(self):
+        """Test that custom location is read correctly."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "test-gcp-project"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-pro"
+        os.environ["GOOGLE_CLOUD_LOCATION"] = "asia-south1"
         cfg = get_llm_config()
-        self.assertEqual(cfg.model, "gemini-3.6-flash")
+        self.assertEqual(cfg.location, "asia-south1")
+
+    def test_provider_configuration_gemini_direct_rejected(self):
+        """Test that selecting 'gemini' raises error pointing to 'vertex'."""
+        os.environ["LLM_PROVIDER"] = "gemini"
+        with self.assertRaises(ValueError) as ctx:
+            get_llm_config()
+        self.assertIn("Provider 'gemini' (direct Google AI Studio inference) has been removed", str(ctx.exception))
+        self.assertIn("vertex", str(ctx.exception))
 
     def test_provider_selection_does_not_expose_secrets(self):
         """Test that provider selection and LLMConfig do not expose API secrets in repr or str."""
         test_cases = [
-            ("gemini", "GEMINI_API_KEY", "super-secret-gemini-key-xyz"),
+            ("openrouter", "OPENROUTER_API_KEY", "super-secret-openrouter-key-xyz"),
+            ("vertex", "GOOGLE_CLOUD_PROJECT", "test-project-12345"),
+            ("vertex", "VERTEX_API_KEY", "super-secret-vertex-key-xyz"),
             ("openai", "OPENAI_API_KEY", "super-secret-openai-key-abc"),
             ("anthropic", "ANTHROPIC_API_KEY", "super-secret-anthropic-key-def"),
         ]
         for prov, key_var, secret in test_cases:
             os.environ["LLM_PROVIDER"] = prov
             os.environ[key_var] = secret
+            if prov == "vertex":
+                os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+                if key_var != "GOOGLE_CLOUD_PROJECT":
+                    os.environ["GOOGLE_CLOUD_PROJECT"] = "test-project-12345"
             cfg = get_llm_config()
-            self.assertNotIn(secret, repr(cfg), f"Secret exposed in repr for provider {prov}")
-            self.assertNotIn(secret, str(cfg), f"Secret exposed in str for provider {prov}")
+            if key_var in ("OPENROUTER_API_KEY", "VERTEX_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+                self.assertNotIn(secret, repr(cfg), f"Secret exposed in repr for variable {key_var}")
+                self.assertNotIn(secret, str(cfg), f"Secret exposed in str for variable {key_var}")
 
-    def test_gemini_model_instantiation_and_capabilities(self):
-        """Test constructing Gemini model without making live API calls."""
-        os.environ["LLM_PROVIDER"] = "gemini"
-        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-for-test"
-        os.environ["GEMINI_MODEL"] = "gemini-2.5-flash"
+    def test_provider_configuration_vertex_express_mode_api_key(self):
+        """Test Vertex AI provider when VERTEX_API_KEY is present without requiring GOOGLE_CLOUD_PROJECT."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["VERTEX_API_KEY"] = "test-express-api-key-123"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+        if "GOOGLE_CLOUD_PROJECT" in os.environ:
+            del os.environ["GOOGLE_CLOUD_PROJECT"]
+        if "GCP_PROJECT" in os.environ:
+            del os.environ["GCP_PROJECT"]
+
+        cfg = get_llm_config()
+        self.assertEqual(cfg.provider, "vertex")
+        self.assertEqual(cfg.model, "gemini-1.5-flash")
+        self.assertEqual(cfg.api_key, "test-express-api-key-123")
+        self.assertIsNone(cfg.project)
+        self.assertEqual(cfg.location, "us-central1")
+
+    def test_provider_configuration_vertex_empty_api_key_falls_back_to_adc_requirement(self):
+        """Test that an empty/whitespace VERTEX_API_KEY falls back to ADC and requires GOOGLE_CLOUD_PROJECT."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["VERTEX_API_KEY"] = "   "
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+        if "GOOGLE_CLOUD_PROJECT" in os.environ:
+            del os.environ["GOOGLE_CLOUD_PROJECT"]
+        if "GCP_PROJECT" in os.environ:
+            del os.environ["GCP_PROJECT"]
+
+        with self.assertRaises(ValueError) as ctx:
+            get_llm_config()
+        self.assertIn("GOOGLE_CLOUD_PROJECT is missing", str(ctx.exception))
+        self.assertIn("Silent fallback to mock is prohibited", str(ctx.exception))
+
+    def test_provider_configuration_vertex_express_mode_with_vertex_project(self):
+        """Test Vertex AI provider with VERTEX_API_KEY and optional VERTEX_PROJECT."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["VERTEX_API_KEY"] = "test-express-api-key-123"
+        os.environ["VERTEX_PROJECT"] = "teammate-quota-project"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+
+        cfg = get_llm_config()
+        self.assertEqual(cfg.provider, "vertex")
+        self.assertEqual(cfg.api_key, "test-express-api-key-123")
+        self.assertEqual(cfg.project, "teammate-quota-project")
+
+    def test_vertex_model_instantiation_and_capabilities(self):
+        """Test constructing Vertex AI model with ADC fallback (ChatVertexAI) without making live API calls."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "test-project-for-test"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+        if "VERTEX_API_KEY" in os.environ:
+            del os.environ["VERTEX_API_KEY"]
+
         cfg = get_llm_config()
         llm = create_llm(cfg)
-        self.assertEqual(type(llm).__name__, "ChatGoogleGenerativeAI")
-        self.assertEqual(llm.model, "gemini-2.5-flash")
+        self.assertEqual(type(llm).__name__, "ChatVertexAI")
+        self.assertEqual(llm.model_name, "gemini-1.5-flash")
+        self.assertEqual(llm.project, "test-project-for-test")
         self.assertTrue(hasattr(llm, "bind_tools"))
         self.assertTrue(hasattr(llm, "with_structured_output"))
 
-        # Test create_gemini_llm convenience function
-        gemini_llm = create_gemini_llm(cfg)
-        self.assertEqual(type(gemini_llm).__name__, "ChatGoogleGenerativeAI")
+        # Test create_vertex_llm convenience function
+        vertex_llm = create_vertex_llm(cfg)
+        self.assertEqual(type(vertex_llm).__name__, "ChatVertexAI")
 
-    def test_gemini_investigator_and_assessment_tool_binding(self):
-        """Test that Gemini model binds investigation tools and structured output schema."""
-        os.environ["LLM_PROVIDER"] = "gemini"
-        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-for-test"
-        os.environ["GEMINI_MODEL"] = "gemini-2.5-flash"
+    def test_vertex_express_mode_instantiation_and_capabilities(self):
+        """Test constructing Vertex AI model with Express Mode API key (ChatGoogleGenerativeAI) without making live API calls."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["VERTEX_API_KEY"] = "test-secret-vertex-key-999"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
 
-        inv_llm = get_investigator_llm(provider="gemini")
+        cfg = get_llm_config()
+        llm = create_llm(cfg)
+        self.assertEqual(type(llm).__name__, "ChatGoogleGenerativeAI")
+        self.assertTrue(llm.vertexai)
+        self.assertEqual(llm.model, "gemini-1.5-flash")
+        self.assertTrue(hasattr(llm, "bind_tools"))
+        self.assertTrue(hasattr(llm, "with_structured_output"))
+
+        # Verify API key is masked in string/repr of model
+        self.assertNotIn("test-secret-vertex-key-999", str(llm))
+        self.assertNotIn("test-secret-vertex-key-999", repr(llm))
+
+        # Test create_vertex_llm convenience function
+        vertex_llm = create_vertex_llm(cfg)
+        self.assertEqual(type(vertex_llm).__name__, "ChatGoogleGenerativeAI")
+        self.assertTrue(vertex_llm.vertexai)
+
+    def test_vertex_investigator_and_assessment_tool_binding(self):
+        """Test that Vertex AI ADC model binds investigation tools and structured output schema."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "test-project-for-test"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+        if "VERTEX_API_KEY" in os.environ:
+            del os.environ["VERTEX_API_KEY"]
+
+        inv_llm = get_investigator_llm(provider="vertex")
         self.assertTrue(hasattr(inv_llm, "invoke"))
 
-        ass_llm = get_assessment_llm(provider="gemini")
+        ass_llm = get_assessment_llm(provider="vertex")
+        self.assertTrue(hasattr(ass_llm, "invoke"))
+
+    def test_vertex_express_mode_investigator_and_assessment_tool_binding(self):
+        """Test that Vertex AI Express Mode model binds investigation tools and structured output schema."""
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["VERTEX_API_KEY"] = "test-secret-vertex-key-999"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
+
+        inv_llm = get_investigator_llm(provider="vertex")
+        self.assertTrue(hasattr(inv_llm, "invoke"))
+
+        ass_llm = get_assessment_llm(provider="vertex")
+        self.assertTrue(hasattr(ass_llm, "invoke"))
+
+    def test_openrouter_model_instantiation_and_capabilities(self):
+        """Test constructing OpenRouter model (ChatOpenRouter) without making live API calls."""
+        os.environ["LLM_PROVIDER"] = "openrouter"
+        os.environ["OPENROUTER_API_KEY"] = "sk-or-v1-fake-test-key-12345"
+        os.environ["OPENROUTER_MODEL"] = "google/gemini-2.5-flash"
+
+        cfg = get_llm_config()
+        llm = create_llm(cfg)
+        self.assertEqual(type(llm).__name__, "ChatOpenRouter")
+        self.assertEqual(llm.model_name, "google/gemini-2.5-flash")
+        self.assertTrue(hasattr(llm, "bind_tools"))
+        self.assertTrue(hasattr(llm, "with_structured_output"))
+
+        # Verify API key is masked in string/repr of model
+        self.assertNotIn("sk-or-v1-fake-test-key-12345", str(llm))
+        self.assertNotIn("sk-or-v1-fake-test-key-12345", repr(llm))
+
+        # Test create_openrouter_llm convenience function
+        or_llm = create_openrouter_llm(cfg)
+        self.assertEqual(type(or_llm).__name__, "ChatOpenRouter")
+
+    def test_openrouter_investigator_and_assessment_tool_binding(self):
+        """Test that OpenRouter model binds investigation tools and structured output schema."""
+        os.environ["LLM_PROVIDER"] = "openrouter"
+        os.environ["OPENROUTER_API_KEY"] = "sk-or-v1-fake-test-key-12345"
+        os.environ["OPENROUTER_MODEL"] = "google/gemini-2.5-flash"
+
+        inv_llm = get_investigator_llm(provider="openrouter")
+        self.assertTrue(hasattr(inv_llm, "invoke"))
+        self.assertTrue(hasattr(inv_llm, "bind_tools"))
+
+        ass_llm = get_assessment_llm(provider="openrouter")
         self.assertTrue(hasattr(ass_llm, "invoke"))
 
     def test_provider_configuration_unset_raises(self):
@@ -280,9 +446,9 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertEqual(ass["affected_txn_ids"], ["3514030"])
         self.assertEqual(ass["exposure"], 77.07)
 
-    def test_gemini_structured_assessment_omitting_reasoning_confidence_fails_validation(self):
+    def test_structured_assessment_omitting_reasoning_confidence_fails_validation(self):
         """
-        Regression test: Verify that if Gemini returns a response omitting reasoning or confidence,
+        Regression test: Verify that if an LLM returns a response omitting reasoning or confidence,
         the production AssessmentSchema validation path raises a clear ValidationError
         rather than silently accepting malformed output or inventing values.
         """
@@ -290,8 +456,8 @@ class TestRealLLMAgent(unittest.TestCase):
         from langchain_core.output_parsers import PydanticOutputParser
         from langchain_core.exceptions import OutputParserException
 
-        # Mock Gemini-style response that omits reasoning and confidence (as seen in HHG-001 regression)
-        gemini_malformed_response = {
+        # Mock malformed response that omits reasoning and confidence (as seen in HHG-001 regression)
+        malformed_response = {
             "verdict": "legitimate",
             "fraud_probability": 0.05,
             "fraud_type": None,
@@ -306,7 +472,7 @@ class TestRealLLMAgent(unittest.TestCase):
 
         # 1. Direct AssessmentSchema validation must fail
         with self.assertRaises(ValidationError) as ctx:
-            AssessmentSchema(**gemini_malformed_response)
+            AssessmentSchema(**malformed_response)
 
         err_str = str(ctx.exception)
         self.assertIn("reasoning", err_str)
@@ -315,18 +481,18 @@ class TestRealLLMAgent(unittest.TestCase):
         # 2. Output parser validation must fail
         parser = PydanticOutputParser(pydantic_object=AssessmentSchema)
         with self.assertRaises((ValidationError, OutputParserException)):
-            parser.parse(json.dumps(gemini_malformed_response))
+            parser.parse(json.dumps(malformed_response))
 
         # 3. Execution via AssessmentAgent node with structured output wrapper must raise
-        class MockGeminiOmittingFields:
+        class MockLLMOmittingFields:
             def with_structured_output(self, schema):
                 class StructuredWrapper:
                     def invoke(self, messages):
                         p = PydanticOutputParser(pydantic_object=schema)
-                        return p.parse(json.dumps(gemini_malformed_response))
+                        return p.parse(json.dumps(malformed_response))
                 return StructuredWrapper()
 
-        agent = AssessmentAgent(MockGeminiOmittingFields())
+        agent = AssessmentAgent(MockLLMOmittingFields())
         state = create_initial_state("HHG-001", "C12382", "C12382-K1", "3514030")
         with self.assertRaises((ValidationError, OutputParserException)):
             agent.node(state)
@@ -575,19 +741,20 @@ class TestRealLLMAgent(unittest.TestCase):
         self.assertAlmostEqual(ass["exposure"], 77.07, places=2)
 
     # ----------------------------------------------------------------------
-    # 10. GEMINI PROVIDER SIMULATION TESTS
+    # 10. VERTEX PROVIDER SIMULATION TESTS
     # ----------------------------------------------------------------------
-    def test_gemini_provider_simulated_multi_cycle_and_assessment(self):
+    def test_vertex_provider_simulated_multi_cycle_and_assessment(self):
         """
-        Verify that an agent configured for Gemini runs through the full
+        Verify that an agent configured for Vertex runs through the full
         orchestration architecture (Investigator -> ToolExecutor -> Investigator -> Assessment -> Policy)
         when model responses are returned (no live API calls made).
         """
-        os.environ["LLM_PROVIDER"] = "gemini"
-        os.environ["GEMINI_API_KEY"] = "fake-gemini-key-for-test"
+        os.environ["LLM_PROVIDER"] = "vertex"
+        os.environ["GOOGLE_CLOUD_PROJECT"] = "test-gcp-project"
+        os.environ["VERTEX_MODEL"] = "gemini-1.5-flash"
 
-        # Mock investigator that simulates Gemini tool-calling behavior
-        class MockGeminiInvestigator:
+        # Mock investigator that simulates Vertex tool-calling behavior
+        class MockVertexInvestigator:
             def __init__(self):
                 self.calls = 0
 
@@ -598,20 +765,20 @@ class TestRealLLMAgent(unittest.TestCase):
                 self.calls += 1
                 if self.calls == 1:
                     return AIMessage(
-                        content="Gemini investigating flagged transaction.",
+                        content="Vertex investigating flagged transaction.",
                         tool_calls=[{
                             "name": "get_transaction",
                             "args": {"transaction_id": "3514030"},
-                            "id": "gemini_call_001",
+                            "id": "vertex_call_001",
                         }]
                     )
                 return AIMessage(
-                    content="Gemini completed investigation analysis.",
+                    content="Vertex completed investigation analysis.",
                     tool_calls=[],
                     additional_kwargs={
                         "hypotheses": [
                             {
-                                "id": "hyp_gemini_1",
+                                "id": "hyp_vertex_1",
                                 "title": "Suspected Unauthorized Access",
                                 "description": "Flagged transaction in unusual channel",
                                 "confidence": 0.75,
@@ -622,7 +789,7 @@ class TestRealLLMAgent(unittest.TestCase):
                     }
                 )
 
-        class MockGeminiAssessment:
+        class MockVertexAssessment:
             def with_structured_output(self, schema):
                 return self
 
@@ -635,13 +802,13 @@ class TestRealLLMAgent(unittest.TestCase):
                     affected_txn_ids=["3514030"],
                     supporting_evidence=["Transaction flagged by monitoring"],
                     contradicting_evidence=["Customer account active"],
-                    reasoning="Gemini assessment concluding uncertain pending customer validation.",
+                    reasoning="Vertex assessment concluding uncertain pending customer validation.",
                     confidence=0.65,
                 )
 
         graph = build_investigation_graph(
-            llm=MockGeminiInvestigator(),
-            assessment_llm=MockGeminiAssessment(),
+            llm=MockVertexInvestigator(),
+            assessment_llm=MockVertexAssessment(),
         )
 
         state = create_initial_state(

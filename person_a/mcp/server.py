@@ -9,12 +9,19 @@ PROJECT_ROOT = os.path.abspath(
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from mcp.server import MCPServer
+try:
+    from mcp.server import MCPServer
+    mcp = MCPServer("TigerGraph Fraud Investigator")
+except ImportError:
+    MCPServer = None
+    class _DummyMCP:
+        def tool(self):
+            return lambda fn: fn
+        def run(self):
+            pass
+    mcp = _DummyMCP()
 
 from person_a.retrieval.fraud_analyzer import FraudAnalyzer
-
-
-mcp = MCPServer("TigerGraph Fraud Investigator")
 
 _analyzer = None
 

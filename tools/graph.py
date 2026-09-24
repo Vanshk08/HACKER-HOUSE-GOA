@@ -10,7 +10,7 @@ treating graph linkages as fraud.
 from typing import Any
 from langchain_core.tools import tool
 
-from .hhgoa_data import unavailable
+from .hhgoa_data import shared_origins, related_fraud
 
 
 @tool
@@ -38,7 +38,10 @@ def find_shared_origins(
         connected cards, relevant transactions, timestamps, previous confirmed fraud
         connections where available, and backend status.
     """
-    return unavailable("shared_origin_query_not_installed") | {"card_id": card_id, "customer_id": customer_id}
+    return shared_origins(
+        card_id=str(card_id).strip() if card_id else None,
+        customer_id=str(customer_id).strip() if customer_id else None,
+    )
 
 
 @tool
@@ -71,5 +74,10 @@ def find_related_fraud(
         A dictionary containing related fraud cases, relationship types,
         connected entity IDs, supporting case IDs, and backend status.
     """
-    return unavailable("related_fraud_query_not_installed") | {"card_id": card_id, "customer_id": customer_id, "device_id": device_id, "region": region}
+    return related_fraud(
+        card_id=str(card_id).strip() if card_id else None,
+        customer_id=str(customer_id).strip() if customer_id else None,
+        device_id=str(device_id).strip() if device_id else None,
+        region=str(region).strip() if region else None,
+    )
 

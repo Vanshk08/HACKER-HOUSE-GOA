@@ -1,6 +1,6 @@
 """
 Autonomous and Real LLM engines for Investigation and Assessment.
-Provides provider abstraction for OpenAI, Anthropic, Gemini, and offline/mock models,
+Provides provider abstraction for Vertex AI, OpenAI, Anthropic, and offline/mock models,
 conforming to LangChain's interface and preserving deterministic offline testing.
 """
 
@@ -418,13 +418,28 @@ MockInvestigatorLLM = AutonomousInvestigatorLLM
 MockAssessmentLLM = AutonomousAssessmentLLM
 
 
-def create_gemini_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
+def create_vertex_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
     """
-    Construct a Gemini chat model (ChatGoogleGenerativeAI) using LangChain's official Google GenAI integration.
+    Construct a Vertex AI chat model (ChatVertexAI) using LangChain's official Vertex AI integration.
     Supports tool/function calling, binding INVESTIGATION_TOOLS, and structured output.
     """
     if config is None:
-        config = get_llm_config(provider="gemini")
+        config = get_llm_config(provider="vertex")
+    return create_llm(config=config, **kwargs)
+
+
+def create_gemini_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
+    """Deprecated: Google AI Studio direct inference removed. Use create_vertex_llm."""
+    raise ValueError("Direct Google AI Studio inference (create_gemini_llm) has been removed. Use create_vertex_llm.")
+
+
+def create_openrouter_llm(config: Optional[LLMConfig] = None, **kwargs: Any) -> Any:
+    """
+    Construct an OpenRouter chat model (ChatOpenRouter) using LangChain's official OpenRouter integration.
+    Supports tool/function calling, binding INVESTIGATION_TOOLS, and structured output.
+    """
+    if config is None:
+        config = get_llm_config(provider="openrouter")
     return create_llm(config=config, **kwargs)
 
 

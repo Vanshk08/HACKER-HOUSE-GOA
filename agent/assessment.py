@@ -342,7 +342,7 @@ Evaluate all gathered evidence and produce the complete 9-field structured Asses
                 continue
             tx_rec = transaction(tx_id) if transaction is not None else None
             if tx_rec is not None:
-                if tx_rec.get("backend_status") == "hhgoa_ieee" and tx_rec.get("amount") is not None:
+                if tx_rec.get("backend_status") in ("hhgoa_ieee", "real_dataset") and tx_rec.get("amount") is not None:
                     verified_affected_txns.append(tx_id)
                     verified_exposure += float(tx_rec.get("amount") or 0.0)
                 else:
@@ -354,7 +354,7 @@ Evaluate all gathered evidence and produce the complete 9-field structured Asses
         flagged_txn = str(state.get("flagged_txn_id", "")).strip()
         if flagged_txn and not verified_affected_txns and transaction is not None:
             tx_rec = transaction(flagged_txn)
-            if tx_rec.get("backend_status") == "hhgoa_ieee" and tx_rec.get("amount") is not None:
+            if tx_rec.get("backend_status") in ("hhgoa_ieee", "real_dataset") and tx_rec.get("amount") is not None:
                 # Include flagged txn if verdict is not legitimate
                 if verdict in ("confirmed_fraud", "suspected_fraud", "uncertain"):
                     verified_affected_txns.append(flagged_txn)

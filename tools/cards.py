@@ -9,7 +9,7 @@ Retrieves factual observed data only without interpreting fraud.
 from typing import Any
 from langchain_core.tools import tool
 
-from .hhgoa_data import card_history, unavailable
+from .hhgoa_data import card_history, connected_cards
 
 
 @tool
@@ -58,5 +58,5 @@ def get_connected_cards(card_id: str) -> dict[str, Any]:
         A dictionary containing connected cards, connection topologies,
         shared entities, and backend status.
     """
-    return unavailable("connected_card_relationships") | {"card_id": str(card_id).strip()}
+    return connected_cards(str(card_id).strip())
 
