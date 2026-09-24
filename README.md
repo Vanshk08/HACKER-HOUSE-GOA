@@ -1540,9 +1540,5 @@ The goal is to **investigate it, gather evidence, understand relationships, pres
 
 ```
 
-### One change I'd make before you paste it
-
-I deliberately **didn't put “100% precomputed ground truth”** anywhere in the README. Your frontend currently says that, but for the repository README I'd use **“precomputed investigation results”**. That's more accurate and consistent with what your system actually demonstrates.
-
-Also, I would **not claim that the README itself is the challenge's original README**. This is your **project README**, while the challenge's original README remains the specification you built against. 
+ile the challenge's original README remains the specification you built against. 
 ```
