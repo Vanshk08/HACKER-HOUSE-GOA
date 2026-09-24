@@ -1,0 +1,12 @@
+data/raw/
+data/*.duckdb
+.vercel/
+frontend/node_modules/
+frontend/dist/
+results/
+results_*/
+scratch/
+*.pyc
+__pycache__/
+profile_output.txt
+mapping_output.txt

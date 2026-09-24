@@ -1,0 +1,15 @@
+[project]
+name = "app"
+version = "0.1.0"
+dependencies = [
+    "langchain-core>=1.6.3",
+    "langgraph>=1.2.11",
+    "pydantic>=2.13.5",
+    "langchain-openrouter>=0.2.0",
+    "python-dotenv>=1.2.3",
+    "mcp>=1.26.0",
+    "pytigergraph>=1.8.0",
+    "fastapi>=0.141.1",
+    "sse-starlette>=3.0.2"
+]
+requires-python = "~=3.13.0"

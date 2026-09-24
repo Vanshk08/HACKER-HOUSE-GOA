@@ -11,5 +11,7 @@ scratch/
 *.duckdb
 
 data/*.csv
+!data/case_pack.csv
 data/raw/
 results_*/
+.vercel
