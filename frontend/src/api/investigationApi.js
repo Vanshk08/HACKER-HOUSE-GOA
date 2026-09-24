@@ -19,60 +19,77 @@ export function subscribeInvestigationStream(caseId, onMessage, onError, onCompl
   const url = `/api/investigate/stream/${encodeURIComponent(caseId)}`;
   const eventSource = new EventSource(url);
 
-  eventSource.addEventListener('case_loaded', (e) => {
+  let completed = false;
+  let receivedData = false;
+
+  const handleEvent = (type, e) => {
     try {
       const data = JSON.parse(e.data);
-      onMessage({ type: 'case_loaded', data });
+      receivedData = true;
+      onMessage({ type, data });
     } catch (err) {
-      console.error('SSE parse error:', err);
+      console.error(`SSE ${type} parse error:`, err);
     }
+  };
+
+  eventSource.addEventListener('case_loaded', (e) => {
+    handleEvent('case_loaded', e);
   });
 
   eventSource.addEventListener('tool_execution', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      onMessage({ type: 'tool_execution', data });
-    } catch (err) {
-      console.error('SSE parse error:', err);
-    }
+    handleEvent('tool_execution', e);
   });
 
   eventSource.addEventListener('assessment', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      onMessage({ type: 'assessment', data });
-    } catch (err) {
-      console.error('SSE parse error:', err);
-    }
+    handleEvent('assessment', e);
   });
 
   eventSource.addEventListener('policy', (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      onMessage({ type: 'policy', data });
-    } catch (err) {
-      console.error('SSE parse error:', err);
-    }
+    handleEvent('policy', e);
   });
 
   eventSource.addEventListener('complete', (e) => {
     try {
       const data = JSON.parse(e.data);
+      receivedData = true;
+      completed = true;
+
       onMessage({ type: 'complete', data });
-      if (onComplete) onComplete(data);
+
+      if (onComplete) {
+        onComplete(data);
+      }
     } catch (err) {
-      console.error('SSE parse error:', err);
+      console.error('SSE complete parse error:', err);
     } finally {
       eventSource.close();
     }
   });
 
   eventSource.onerror = (err) => {
-    if (onError) onError(err);
+    // If the complete event was received, this is just the connection
+    // closing after a successful investigation.
+    if (completed) {
+      eventSource.close();
+      return;
+    }
+
+    // Don't immediately close/retry through the synchronous endpoint
+    // if we've already received valid investigation events.
+    if (receivedData) {
+      console.warn('SSE connection interrupted after receiving data:', err);
+      return;
+    }
+
+    if (onError) {
+      onError(err);
+    }
+
     eventSource.close();
   };
 
   return () => {
+    completed = true;
     eventSource.close();
   };
 }
