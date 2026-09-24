@@ -264,26 +264,26 @@ class AutonomousAssessmentLLM:
         )
 
         # Extract transaction amount
-        amt_match = re.search(r"'amount':\s*([0-9]+\.?[0-9]*)", content)
+        amt_match = re.search(r"['\"]amount['\"]:\s*([0-9]+\.?[0-9]*)", content)
         exposure = float(amt_match.group(1)) if amt_match else 0.0
 
         # Extract flagged transaction ID
         txn_match = re.search(r"flagged_txn_id:\s*([0-9]+)", content)
         if not txn_match:
-            txn_match = re.search(r"'transaction_id':\s*'([0-9]+)'", content)
+            txn_match = re.search(r"['\"]transaction_id['\"]:\s*['\"]([0-9]+)['\"]", content)
         affected_txn_ids = [txn_match.group(1)] if txn_match else []
 
         # Extract channel and billing region
-        channel_match = re.search(r"'channel':\s*'([^']+)'", content)
+        channel_match = re.search(r"['\"]channel['\"]:\s*['\"]([^'\"]+)['\"]", content)
         channel = channel_match.group(1) if channel_match else "unknown"
 
-        reg_match = re.search(r"'billing_region':\s*'([^']+)'", content)
+        reg_match = re.search(r"['\"]billing_region['\"]:\s*['\"]([^'\"]+)['\"]", content)
         billing_region = reg_match.group(1) if reg_match else None
 
         # Check if billing region is in customer's historical regions
         is_region_established = False
         if billing_region:
-            reg_codes_match = re.search(r"'region_codes':\s*\[([^\]]+)\]", content)
+            reg_codes_match = re.search(r"['\"](?:region_codes|historical_regions)['\"]:\s*\[([^\]]+)\]", content)
             if reg_codes_match:
                 codes_str = reg_codes_match.group(1)
                 is_region_established = f"'{billing_region}'" in codes_str or f'"{billing_region}"' in codes_str

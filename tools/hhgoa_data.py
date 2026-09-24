@@ -89,13 +89,51 @@ def customer_history(customer_id: str) -> dict[str, Any]:
             cards = _items(blocks, "cards")
             transactions = _items(blocks, "txns")
             if blocks:
+                card_ids = [c.get("v_id") or _attrs(c).get("card_id") for c in cards]
+                regions = set()
+                channels = set()
+                amounts = []
+                recent_txns = []
+                for tx in transactions:
+                    attrs = _attrs(tx)
+                    if attrs.get("addr1"):
+                        regions.add(str(attrs["addr1"]))
+                    if attrs.get("channel"):
+                        channels.add(str(attrs["channel"]))
+                    amt = attrs.get("TransactionAmt", attrs.get("amount"))
+                    if amt is not None:
+                        try:
+                            amounts.append(float(amt))
+                        except (ValueError, TypeError):
+                            pass
+                    if len(recent_txns) < 5:
+                        recent_txns.append({
+                            "transaction_id": tx.get("v_id") or attrs.get("TransactionID"),
+                            "amount": amt,
+                            "timestamp": attrs.get("ts"),
+                            "channel": attrs.get("channel"),
+                            "billing_region": str(attrs.get("addr1", "")),
+                            "risk_score": attrs.get("risk_score"),
+                        })
+
+                spending_summary = {}
+                if amounts:
+                    spending_summary = {
+                        "min_amount": round(min(amounts), 2),
+                        "max_amount": round(max(amounts), 2),
+                        "mean_amount": round(sum(amounts) / len(amounts), 2),
+                    }
+
                 return {
                     "customer_id": customer_id,
-                    "cards": cards,
-                    "transactions": transactions,
+                    "cards": cards[:5],
+                    "card_ids": card_ids,
                     "total_transactions": len(transactions),
+                    "historical_regions": sorted(regions),
+                    "historical_channels": sorted(channels),
+                    "recent_transactions": recent_txns,
+                    "spending_summary": spending_summary,
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": blocks,
                 }
         except Exception:
             pass
@@ -107,14 +145,21 @@ def customer_history(customer_id: str) -> dict[str, Any]:
 def customer_cards(customer_id: str) -> dict[str, Any]:
     if _tg_available():
         try:
-            history = customer_history(customer_id)
-            if history.get("cards"):
+            blocks = client().get_customer_history(customer_id)
+            cards = _items(blocks, "cards")
+            if cards:
+                card_list = []
+                for c in cards:
+                    c_id = c.get("v_id") or _attrs(c).get("card_id")
+                    card_list.append({
+                        "card_id": c_id,
+                        "card_type": _attrs(c).get("card4") or _attrs(c).get("card_type"),
+                    })
                 return {
                     "customer_id": customer_id,
-                    "cards": history["cards"],
-                    "card_count": len(history["cards"]),
+                    "cards": card_list,
+                    "card_count": len(card_list),
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": history.get("observed_data", []),
                 }
         except Exception:
             pass
@@ -138,14 +183,24 @@ def card_history(card_id: str) -> dict[str, Any]:
             if resolved:
                 blocks = client().get_card_history(resolved)
                 if blocks:
+                    txns = _items(blocks, "txns")
+                    compact_txns = []
+                    for t in txns[:5]:
+                        attrs = _attrs(t)
+                        compact_txns.append({
+                            "transaction_id": t.get("v_id") or attrs.get("TransactionID"),
+                            "amount": attrs.get("TransactionAmt", attrs.get("amount")),
+                            "timestamp": attrs.get("ts"),
+                            "channel": attrs.get("channel"),
+                            "risk_score": attrs.get("risk_score"),
+                        })
                     return {
                         "card_id": card_id,
                         "resolved_card_id": resolved,
-                        "card": _items(blocks, "card"),
-                        "transactions": _items(blocks, "txns"),
-                        "total_transactions": len(_items(blocks, "txns")),
+                        "card": _items(blocks, "card")[:2],
+                        "recent_transactions": compact_txns,
+                        "total_transactions": len(txns),
                         "backend_status": "hhgoa_ieee",
-                        "observed_data": blocks,
                     }
         except Exception:
             pass
@@ -163,10 +218,9 @@ def related_transactions(card_id: str) -> dict[str, Any]:
                 txns = _items(blocks, "txns")
                 return {
                     "card_id": card_id,
-                    "transactions": txns,
+                    "transactions": txns[:10],
                     "related_transaction_count": len(txns),
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": blocks,
                 }
         except Exception:
             pass
@@ -230,13 +284,21 @@ def region_activity(customer_id: str, region: str) -> dict[str, Any]:
             blocks = client().get_region_neighbors(region_id)
             if blocks:
                 txns = [t for t in _items(blocks, "txns") if _attrs(t).get("customer_id") == customer_id]
+                compact_txns = []
+                for t in txns[:5]:
+                    attrs = _attrs(t)
+                    compact_txns.append({
+                        "transaction_id": t.get("v_id") or attrs.get("TransactionID"),
+                        "amount": attrs.get("TransactionAmt", attrs.get("amount")),
+                        "timestamp": attrs.get("ts"),
+                        "channel": attrs.get("channel"),
+                    })
                 return {
                     "customer_id": customer_id,
                     "region": region,
-                    "transactions": txns,
+                    "recent_transactions": compact_txns,
                     "transaction_count": len(txns),
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": blocks,
                 }
         except Exception:
             pass
@@ -248,19 +310,20 @@ def region_activity(customer_id: str, region: str) -> dict[str, Any]:
 def customer_regions(customer_id: str) -> dict[str, Any]:
     if _tg_available():
         try:
-            history = customer_history(customer_id)
-            if history.get("transactions"):
+            blocks = client().get_customer_history(customer_id)
+            transactions = _items(blocks, "txns")
+            if transactions:
                 regions: dict[str, int] = {}
-                for tx in history["transactions"]:
+                for tx in transactions:
                     region = _attrs(tx).get("addr1")
                     if region:
                         regions[str(region)] = regions.get(str(region), 0) + 1
                 return {
                     "customer_id": customer_id,
                     "region_codes": sorted(regions),
-                    "regions": [{"region_code": k, "transaction_count": v} for k, v in regions.items()],
+                    "regions": [{"region_code": k, "transaction_count": v} for k, v in sorted(regions.items())],
+                    "total_regions": len(regions),
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": history["observed_data"],
                 }
         except Exception:
             pass
@@ -292,16 +355,28 @@ def similar_closed_cases(
             blocks = client().get_similar_closed_cases(customer_id or "", pattern or "out_of_region_use")
             cases = _items(blocks, "cases")
             if cases:
-                details = []
-                case_id = _attrs(cases[0]).get("case_id", cases[0].get("v_id"))
-                if case_id:
-                    details = _items(client().get_case(str(case_id)), "result")
+                compact_cases = []
+                verdicts = {}
+                for c in cases:
+                    attrs = _attrs(c)
+                    outcome = attrs.get("outcome", c.get("verdict"))
+                    if outcome:
+                        verdicts[str(outcome)] = verdicts.get(str(outcome), 0) + 1
+                    if len(compact_cases) < 5:
+                        compact_cases.append({
+                            "case_id": c.get("v_id") or attrs.get("case_id"),
+                            "customer_id": attrs.get("customer_id"),
+                            "card_id": attrs.get("card_id"),
+                            "verdict": outcome,
+                            "pattern": attrs.get("pattern"),
+                            "exposure": attrs.get("exposure_usd"),
+                            "analyst_notes": attrs.get("analyst_notes"),
+                        })
                 return {
-                    "cases": cases,
-                    "case_details": details,
+                    "cases": compact_cases,
                     "total_matches": len(cases),
+                    "historical_verdict_breakdown": verdicts,
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": blocks,
                 }
         except Exception:
             pass
@@ -321,12 +396,20 @@ def closed_case(case_id: str) -> dict[str, Any]:
             blocks = client().get_case(case_id)
             cases = _items(blocks, "result")
             if cases:
+                attrs = _attrs(cases[0])
                 return {
                     "case_id": case_id,
-                    "case": cases[0] if cases else None,
-                    "found": bool(cases),
+                    "case": {
+                        "case_id": case_id,
+                        "customer_id": attrs.get("customer_id"),
+                        "card_id": attrs.get("card_id"),
+                        "verdict": attrs.get("outcome"),
+                        "pattern": attrs.get("pattern"),
+                        "exposure": attrs.get("exposure_usd"),
+                        "analyst_notes": attrs.get("analyst_notes"),
+                    },
+                    "found": True,
                     "backend_status": "hhgoa_ieee",
-                    "observed_data": blocks,
                 }
         except Exception:
             pass

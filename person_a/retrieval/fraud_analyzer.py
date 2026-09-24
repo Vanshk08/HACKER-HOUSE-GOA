@@ -183,9 +183,52 @@ class FraudAnalyzer:
                 except Exception:
                     continue
 
-        # -----------------------------------------
-        # 6. FINAL RESPONSE
-        # -----------------------------------------
+        # Compact customer, card, and case evidence to preserve clean LLM context
+        compact_customer_history = []
+        for b in customer_raw:
+            if "txns" in b:
+                compact_txns = []
+                for t in b["txns"][:5]:
+                    t_attrs = t.get("attributes", {})
+                    compact_txns.append({
+                        "v_id": t.get("v_id"),
+                        "amount": t_attrs.get("TransactionAmt", t_attrs.get("amount")),
+                        "ts": t_attrs.get("ts"),
+                        "channel": t_attrs.get("channel"),
+                    })
+                compact_customer_history.append({"txns": compact_txns, "total_txns": len(b["txns"])})
+            else:
+                compact_customer_history.append(b)
+
+        compact_card_history = []
+        for b in card_raw:
+            if "txns" in b:
+                compact_txns = []
+                for t in b["txns"][:5]:
+                    t_attrs = t.get("attributes", {})
+                    compact_txns.append({
+                        "v_id": t.get("v_id"),
+                        "amount": t_attrs.get("TransactionAmt", t_attrs.get("amount")),
+                        "ts": t_attrs.get("ts"),
+                        "channel": t_attrs.get("channel"),
+                    })
+                compact_card_history.append({"txns": compact_txns, "total_txns": len(b["txns"])})
+            else:
+                compact_card_history.append(b)
+
+        compact_similar_cases = []
+        for c in similar_cases[:5]:
+            c_attrs = c.get("attributes", {})
+            compact_similar_cases.append({
+                "v_id": c.get("v_id"),
+                "attributes": {
+                    "case_id": c.get("v_id") or c_attrs.get("case_id"),
+                    "outcome": c_attrs.get("outcome", c.get("verdict")),
+                    "pattern": c_attrs.get("pattern"),
+                    "exposure_usd": c_attrs.get("exposure_usd"),
+                    "analyst_notes": c_attrs.get("analyst_notes"),
+                }
+            })
 
         return {
             "transaction_id": attrs.get(
@@ -232,7 +275,7 @@ class FraudAnalyzer:
                         "occupation": None,
                         "pagerank": None,
                     }
-                    for card in cards
+                    for card in cards[:5]
                 ],
 
                 "related_transaction_count":
@@ -240,13 +283,13 @@ class FraudAnalyzer:
 
                 # Keep the response manageable.
                 "related_transactions":
-                    related_summary[:20]
+                    related_summary[:10]
             },
-            "customer_history": customer_raw,
-            "card_history": card_raw,
-            "region_evidence": region_evidence,
-            "email_evidence": email_evidence,
-            "similar_prior_cases": similar_cases,
+            "customer_history": compact_customer_history,
+            "card_history": compact_card_history,
+            "region_evidence": region_evidence[:5],
+            "email_evidence": email_evidence[:5],
+            "similar_prior_cases": compact_similar_cases,
         }
 
     # -----------------------------------------

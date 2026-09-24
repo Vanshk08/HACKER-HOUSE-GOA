@@ -156,6 +156,9 @@ class AssessmentAgent:
             HumanMessage(content=context),
         ]
 
+        from agent.investigator import print_llm_request_diagnostics
+        print_llm_request_diagnostics(messages, state=state, label="AssessmentAgent")
+
         if self.structured_llm is not None:
             try:
                 raw_output = self.structured_llm.invoke(messages)
@@ -206,6 +209,22 @@ class AssessmentAgent:
         if customer_status:
             trigger_info += f"- customer_response_status: {customer_status}\n"
 
+        if evidence:
+            ev_lines = []
+            for ev in evidence:
+                src = ev.get("source", "tool")
+                desc = ev.get("description", "")
+                data_dict = ev.get("data", {}).get("result", {})
+                if isinstance(data_dict, dict):
+                    summary_keys = [k for k in data_dict if k not in ("observed_data", "cases", "transactions", "cards")]
+                    summary_sub = {k: data_dict[k] for k in summary_keys[:8]}
+                    ev_lines.append(f"- [{src}] {desc}: {summary_sub}")
+                else:
+                    ev_lines.append(f"- [{src}] {desc}: {str(data_dict)[:300]}")
+            evidence_str = "\n".join(ev_lines)
+        else:
+            evidence_str = "[]"
+
         return f"""CASE INFORMATION:
 - case_id: {state.get("case_id")}
 - customer_id: {state.get("customer_id")}
@@ -216,7 +235,7 @@ INVESTIGATOR'S FINAL SYNTHESIS:
 {investigator_response}
 
 EVIDENCE GATHERED ({len(evidence)} items):
-{evidence}
+{evidence_str}
 
 WORKING HYPOTHESES:
 {hypotheses}

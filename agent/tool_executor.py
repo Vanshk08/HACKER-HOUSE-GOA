@@ -1,5 +1,4 @@
-# agent/tool_executor.py
-
+import json
 from langchain_core.messages import ToolMessage
 
 from tools import INVESTIGATION_TOOLS
@@ -59,8 +58,17 @@ class ToolExecutor:
         # Message returned to LLM
         # -----------------------------------------
 
+        if isinstance(result, (dict, list)):
+            content_str = json.dumps(result, default=str)
+        else:
+            content_str = str(result)
+
+        # Safety ceiling per tool message to prevent context blowup
+        if len(content_str) > 10000:
+            content_str = content_str[:10000] + "\n... [Remaining tool output truncated to fit LLM context]"
+
         tool_message = ToolMessage(
-            content=str(result),
+            content=content_str,
             tool_call_id=tool_call_id,
         )
 

@@ -24,6 +24,7 @@ CRITICAL RESPONSIBILITIES:
    - Decide dynamically which investigation tools to call based on case context and returned evidence.
    - Call tools over multiple cycles as needed to test emerging leads.
    - Do NOT attempt to analyze the entire transaction database. Query specific tools for relevant cards, customers, devices, regions, or sequences.
+   - Leverage graph intelligence tools including investigate_transaction_graph to examine network signals, linked entities, and graph risk features for the flagged transaction.
 
 2. COMPETING HYPOTHESES:
    - Actively generate, evaluate, and update COMPETING HYPOTHESES across multiple cycles:
@@ -66,6 +67,54 @@ CRITICAL RESPONSIBILITIES:
 """
 
 
+def print_llm_request_diagnostics(messages: list[Any], state: dict[str, Any] | None = None, label: str = "Investigator"):
+    """
+    Diagnostic reported BEFORE LLM invocation:
+    - number of messages
+    - character count of each message
+    - estimated token count of each message
+    - total estimated input tokens
+    - size/type of any injected state/context
+    Does NOT print secrets or raw dataset content.
+    """
+    num_messages = len(messages)
+    total_chars = 0
+    total_est_tokens = 0
+
+    print(f"\n{'='*70}")
+    print(f"[LLM REQUEST DIAGNOSTIC - {label}]")
+    print(f"Number of messages: {num_messages}")
+
+    for idx, msg in enumerate(messages):
+        msg_type = type(msg).__name__
+        content = getattr(msg, "content", "")
+        if isinstance(content, list):
+            content_str = json.dumps(content, default=str)
+        else:
+            content_str = str(content)
+        chars = len(content_str)
+        tokens = max(1, (chars + 3) // 4)
+        total_chars += chars
+        total_est_tokens += tokens
+        tool_calls = getattr(msg, "tool_calls", None)
+        tc_info = f", tool_calls={len(tool_calls)}" if tool_calls else ""
+        print(f"  Message {idx:02d} [{msg_type}{tc_info}]: {chars:,} chars (~{tokens:,} estimated tokens)")
+
+    print(f"Total prompt size: {total_chars:,} characters (~{total_est_tokens:,} estimated tokens)")
+
+    if state:
+        evidence = state.get("evidence", [])
+        hypotheses = state.get("hypotheses", [])
+        evidence_requests = state.get("evidence_requests", [])
+        tools_used = state.get("tools_used", [])
+        print(f"Injected state context:")
+        print(f"  - evidence count: {len(evidence)} (size={len(str(evidence)):,} chars)")
+        print(f"  - hypotheses count: {len(hypotheses)}")
+        print(f"  - evidence_requests count: {len(evidence_requests)}")
+        print(f"  - tools_used: {tools_used}")
+    print(f"{'='*70}\n")
+
+
 class InvestigationAgent:
 
     def __init__(self, llm):
@@ -104,6 +153,12 @@ class InvestigationAgent:
                     content="You have reached the final investigation iteration. Synthesize all gathered evidence and evaluate your competing hypotheses. Do NOT request any additional tools."
                 )
             )
+
+        print_llm_request_diagnostics(
+            messages,
+            state=state,
+            label=f"InvestigationAgent (Iteration {iteration_count + 1}/{max_iterations})"
+        )
 
         response = self.llm.invoke(messages)
 
@@ -211,6 +266,23 @@ class InvestigationAgent:
         if risk_score is not None:
             extra += f"risk_score: {risk_score}\n"
 
+        evidence_items = state.get("evidence", [])
+        if evidence_items:
+            ev_lines = []
+            for ev in evidence_items:
+                src = ev.get("source", "tool")
+                desc = ev.get("description", "")
+                data_dict = ev.get("data", {}).get("result", {})
+                if isinstance(data_dict, dict):
+                    summary_keys = [k for k in data_dict if k not in ("observed_data", "cases", "transactions", "cards")]
+                    summary_sub = {k: data_dict[k] for k in summary_keys[:8]}
+                    ev_lines.append(f"- [{src}] {desc}: {json.dumps(summary_sub, default=str)}")
+                else:
+                    ev_lines.append(f"- [{src}] {desc}: {str(data_dict)[:300]}")
+            evidence_str = "\n".join(ev_lines)
+        else:
+            evidence_str = "[]"
+
         return f"""CASE INFORMATION:
 
 case_id: {state.get("case_id")}
@@ -219,7 +291,7 @@ card_id: {state.get("card_id")}
 flagged_txn_id: {state.get("flagged_txn_id")}
 {extra}
 CURRENT EVIDENCE:
-{state.get("evidence", [])}
+{evidence_str}
 
 CURRENT HYPOTHESES:
 {state.get("hypotheses", [])}
