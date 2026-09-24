@@ -1540,5 +1540,4 @@ The goal is to **investigate it, gather evidence, understand relationships, pres
 
 ```
 
-ile the challenge's original README remains the specification you built against. 
-```
+
