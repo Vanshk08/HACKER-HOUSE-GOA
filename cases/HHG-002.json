@@ -1,0 +1,247 @@
+{
+  "case_id": "HHG-002",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3478782"
+    ],
+    "first_suspicious_txn_id": "3478782",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 292.36,
+    "evidence": [
+      "The transaction amount ($292.36) is significantly higher than the customer's average transaction amount ($47.46) and is the maximum amount ever spent by this customer.",
+      "The transaction has a high risk score of 0.79.",
+      "956 similar closed cases were confirmed fraud."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The transaction exhibits strong indicators of potential fraud, including a significantly higher amount than the customer's average and maximum historical spending, and a high initial risk score. Additionally, a large number of similar closed cases were confirmed as fraud. However, there is also evidence that contradicts a definitive fraud assessment, such as the consistency of the transaction channel (online) with previous customer behavior and the possibility of the transaction originating from a previously used device. Crucially, the customer has not yet responded to the validation request, which is a critical piece of information needed to determine the legitimacy of the transaction. Without the customer's confirmation or denial, it is not possible to definitively classify this transaction as either legitimate or fraudulent. Therefore, the verdict remains uncertain.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-002",
+    "customer_id": "C11891",
+    "card_id": "C11891-K1",
+    "flagged_txn_id": "3478782",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3478782 ($292.36, online) at 0.79. Review and decide.",
+    "risk_score": 0.79,
+    "confidence": 0.6,
+    "fraud_type": "null",
+    "reasoning": "The transaction exhibits strong indicators of potential fraud, including a significantly higher amount than the customer's average and maximum historical spending, and a high initial risk score. Additionally, a large number of similar closed cases were confirmed as fraud. However, there is also evidence that contradicts a definitive fraud assessment, such as the consistency of the transaction channel (online) with previous customer behavior and the possibility of the transaction originating from a previously used device. Crucially, the customer has not yet responded to the validation request, which is a critical piece of information needed to determine the legitimacy of the transaction. Without the customer's confirmation or denial, it is not possible to definitively classify this transaction as either legitimate or fraudulent. Therefore, the verdict remains uncertain.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3478782",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3478782",
+      "question": "Did you authorize this transaction of $292.36 on 2016-11-22 17:27:07?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require step-up multi-factor authentication for high-risk or unconfirmed transaction."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $292.36 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $292.36 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 11 tool call(s) over 6 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 11,
+  "tokens": 0,
+  "latency_s": 32.267,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 32.267,
+  "latency_ms": 32267.0,
+  "latency": {
+    "seconds": 32.267,
+    "ms": 32267.0
+  },
+  "input": {
+    "customer_id": "C11891",
+    "card_id": "C11891-K1",
+    "flagged_txn_id": "3478782",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3478782 ($292.36, online) at 0.79. Review and decide.",
+    "risk_score": 0.79
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "investigate_transaction_graph",
+      "get_similar_closed_cases",
+      "get_card_history",
+      "get_customer_device_history",
+      "get_customer_regions",
+      "get_connected_cards",
+      "find_shared_origins",
+      "find_related_fraud",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "investigate_transaction_graph",
+      "get_similar_closed_cases",
+      "get_card_history",
+      "get_customer_device_history",
+      "get_customer_regions",
+      "get_connected_cards",
+      "find_shared_origins",
+      "find_related_fraud",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 11,
+    "evidence_count": 11,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is legitimate, despite the high amount and risk score. The customer may have made a larger-than-usual purchase. The lack of a billing region might be due to the online nature of the transaction and not necessarily indicative of fraud.",
+        "confidence": 0.5,
+        "supporting_evidence": [
+          "All previous transactions for this customer and card were online, consistent with the current transaction.",
+          "The transaction could have been made from a device previously used by the customer."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount ($292.36) is significantly higher than the customer's average transaction amount ($47.46) and is the maximum amount ever spent by this customer.",
+          "The transaction has a high risk score of 0.79."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The transaction is fraudulent, potentially due to a compromised card. The high transaction amount and risk score, combined with the lack of a billing region, suggest an attempt to exploit the card.",
+        "confidence": 0.5,
+        "supporting_evidence": [
+          "The transaction amount ($292.36) is significantly higher than the customer's average transaction amount ($47.46) and is the maximum amount ever spent by this customer.",
+          "The transaction has a high risk score of 0.79."
+        ],
+        "contradicting_evidence": [
+          "All previous transactions for this customer and card were online, consistent with the current transaction.",
+          "The transaction could have been made from a device previously used by the customer.",
+          "No connections to other fraudulent cards or customers were found through graph analysis."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3478782",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3478782",
+        "question": "Did you authorize this transaction of $292.36 on 2016-11-22 17:27:07?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "null",
+    "exposure": 292.36,
+    "affected_txn_ids": [
+      "3478782"
+    ],
+    "supporting_evidence": [
+      "The transaction amount ($292.36) is significantly higher than the customer's average transaction amount ($47.46) and is the maximum amount ever spent by this customer.",
+      "The transaction has a high risk score of 0.79.",
+      "956 similar closed cases were confirmed fraud."
+    ],
+    "contradicting_evidence": [
+      "All previous transactions for this customer and card were online, consistent with the current transaction.",
+      "The transaction could have been made from a device previously used by the customer.",
+      "No connections to other fraudulent cards or customers were found through graph analysis.",
+      "The customer has not yet responded to the validation request."
+    ],
+    "reasoning": "The transaction exhibits strong indicators of potential fraud, including a significantly higher amount than the customer's average and maximum historical spending, and a high initial risk score. Additionally, a large number of similar closed cases were confirmed as fraud. However, there is also evidence that contradicts a definitive fraud assessment, such as the consistency of the transaction channel (online) with previous customer behavior and the possibility of the transaction originating from a previously used device. Crucially, the customer has not yet responded to the validation request, which is a critical piece of information needed to determine the legitimacy of the transaction. Without the customer's confirmation or denial, it is not possible to definitively classify this transaction as either legitimate or fraudulent. Therefore, the verdict remains uncertain.",
+    "confidence": 0.6
+  },
+  "policy": {
+    "actions": [
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "STEP_UP_AUTH",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30), external evidence requested (1 pending request(s)).",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3478782",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3478782",
+        "question": "Did you authorize this transaction of $292.36 on 2016-11-22 17:27:07?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 292.36,
+    "affected_txn_ids": [
+      "3478782"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

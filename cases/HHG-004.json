@@ -1,0 +1,223 @@
+{
+  "case_id": "HHG-004",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.8,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3583227"
+    ],
+    "first_suspicious_txn_id": "3583227",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 128.33,
+    "evidence": [
+      "Customer C08106 explicitly stated: 'I never made this $128.33 purchase.'",
+      "The transaction has an empty billing region (addr1), which is anomalous compared to the customer's historical transactions that all have specific billing regions.",
+      "The transaction graph analysis identified a 'Large shared-card network: 215 related transactions' as a fraud signal.",
+      "The transaction amount of $128.33 is on the higher end of the customer's historical spending, making it a more attractive target for fraudsters."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The customer explicitly reported not making the transaction. This is strongly supported by the transaction having an empty billing region, which is inconsistent with the customer's historical transaction patterns. Furthermore, the transaction is linked to a 'Large shared-card network' with 215 related transactions, which is a significant fraud signal. While awaiting formal customer confirmation, the existing evidence points strongly towards unauthorized fraud. The transaction amount is also relatively high for this customer, making it a plausible target for fraudsters. There is no evidence to contradict the customer's claim or suggest the transaction is legitimate.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-004",
+    "customer_id": "C08106",
+    "card_id": "C08106-K1",
+    "flagged_txn_id": "3583227",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C08106 message: 'I never made this $128.33 purchase. Please check my card.' Refers to 3583227.",
+    "risk_score": null,
+    "confidence": 0.9,
+    "fraud_type": "unauthorized_transaction",
+    "reasoning": "The customer explicitly reported not making the transaction. This is strongly supported by the transaction having an empty billing region, which is inconsistent with the customer's historical transaction patterns. Furthermore, the transaction is linked to a 'Large shared-card network' with 215 related transactions, which is a significant fraud signal. While awaiting formal customer confirmation, the existing evidence points strongly towards unauthorized fraud. The transaction amount is also relatively high for this customer, making it a plausible target for fraudsters. There is no evidence to contradict the customer's claim or suggest the transaction is legitimate.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3583227",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3583227",
+      "question": "Did you authorize this $128.33 purchase on 2016-12-29 01:53:54?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.80 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $128.33 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $128.33 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 6 tool call(s) over 6 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 6,
+  "tokens": 0,
+  "latency_s": 23.76,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 23.76,
+  "latency_ms": 23760.0,
+  "latency": {
+    "seconds": 23.76,
+    "ms": 23760.0
+  },
+  "input": {
+    "customer_id": "C08106",
+    "card_id": "C08106-K1",
+    "flagged_txn_id": "3583227",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C08106 message: 'I never made this $128.33 purchase. Please check my card.' Refers to 3583227.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_customer_device_history",
+      "get_customer_regions",
+      "investigate_transaction_graph",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_customer_device_history",
+      "get_customer_regions",
+      "investigate_transaction_graph",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 6,
+    "evidence_count": 6,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is legitimate and was made by the customer, despite their claim. The empty billing region could be a data entry error or a characteristic of this specific merchant. The large shared-card network could be a false positive or represent legitimate shared usage patterns.",
+        "confidence": 0.2,
+        "supporting_evidence": [],
+        "contradicting_evidence": [
+          "Customer C08106 explicitly stated: 'I never made this $128.33 purchase.'",
+          "The transaction has an empty billing region (addr1), which is anomalous compared to the customer's historical transactions that all have specific billing regions.",
+          "The transaction graph analysis identified a 'Large shared-card network: 215 related transactions' as a fraud signal."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The transaction is fraudulent, as claimed by the customer. The empty billing region is a strong indicator of fraud, potentially an attempt to bypass location-based fraud detection. The large shared-card network signal further supports the possibility of a compromised card or a coordinated fraud attempt.",
+        "confidence": 0.8,
+        "supporting_evidence": [
+          "Customer C08106 explicitly stated: 'I never made this $128.33 purchase.'",
+          "The transaction has an empty billing region (addr1), which is anomalous compared to the customer's historical transactions that all have specific billing regions.",
+          "The transaction graph analysis identified a 'Large shared-card network: 215 related transactions' as a fraud signal.",
+          "The transaction amount of $128.33 is on the higher end of the customer's historical spending, making it a more attractive target for fraudsters."
+        ],
+        "contradicting_evidence": []
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3583227",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3583227",
+        "question": "Did you authorize this $128.33 purchase on 2016-12-29 01:53:54?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.8,
+    "fraud_type": "unauthorized_transaction",
+    "exposure": 128.33,
+    "affected_txn_ids": [
+      "3583227"
+    ],
+    "supporting_evidence": [
+      "Customer C08106 explicitly stated: 'I never made this $128.33 purchase.'",
+      "The transaction has an empty billing region (addr1), which is anomalous compared to the customer's historical transactions that all have specific billing regions.",
+      "The transaction graph analysis identified a 'Large shared-card network: 215 related transactions' as a fraud signal.",
+      "The transaction amount of $128.33 is on the higher end of the customer's historical spending, making it a more attractive target for fraudsters."
+    ],
+    "contradicting_evidence": [],
+    "reasoning": "The customer explicitly reported not making the transaction. This is strongly supported by the transaction having an empty billing region, which is inconsistent with the customer's historical transaction patterns. Furthermore, the transaction is linked to a 'Large shared-card network' with 215 related transactions, which is a significant fraud signal. While awaiting formal customer confirmation, the existing evidence points strongly towards unauthorized fraud. The transaction amount is also relatively high for this customer, making it a plausible target for fraudsters. There is no evidence to contradict the customer's claim or suggest the transaction is legitimate.",
+    "confidence": 0.9
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.80 >= 0.30), external evidence requested (1 pending request(s)), customer disputed transaction.",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3583227",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3583227",
+        "question": "Did you authorize this $128.33 purchase on 2016-12-29 01:53:54?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 128.33,
+    "affected_txn_ids": [
+      "3583227"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

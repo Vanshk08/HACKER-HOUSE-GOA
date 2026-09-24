@@ -391,6 +391,7 @@ class TestBatchRunner(unittest.TestCase):
 
             # Required top-level keys
             required_top_level = {
+                "case_id",
                 "case",
                 "evidence_requests",
                 "next_best_actions",
@@ -398,13 +399,28 @@ class TestBatchRunner(unittest.TestCase):
                 "stop_reason",
                 "tool_calls",
                 "tokens",
-                "latency",
+                "latency_s",
             }
             for k in required_top_level:
                 self.assertIn(k, rec_unc, f"Missing README top-level key: {k}")
 
+            # Top-level type validation
+            self.assertIsInstance(rec_unc["tool_calls"], int)
+            self.assertIsInstance(rec_unc["tokens"], int)
+            self.assertIsInstance(rec_unc["latency_s"], (int, float))
+
             # Case object validation
             case_obj = rec_unc["case"]
+            required_case_keys = {
+                "status", "verdict", "fraud_probability", "pattern", "pattern_description",
+                "affected_txn_ids", "first_suspicious_txn_id", "connected_card_ids",
+                "connected_device_profiles", "exposure_usd", "evidence", "similar_prior_cases",
+                "summary", "written_to_graph", "graph_case_id"
+            }
+            for ck in required_case_keys:
+                self.assertIn(ck, case_obj, f"Missing case key: {ck}")
+                self.assertIsNotNone(case_obj[ck], f"Case key {ck} cannot be None")
+
             self.assertEqual(case_obj["case_id"], "HHG-001")
             self.assertEqual(case_obj["customer_id"], "C12382")
             self.assertEqual(case_obj["card_id"], "C12382-K1")
@@ -413,6 +429,9 @@ class TestBatchRunner(unittest.TestCase):
             self.assertEqual(case_obj["fraud_probability"], 0.42)
             self.assertEqual(case_obj["exposure_usd"], 77.07)
             self.assertEqual(case_obj["affected_txn_ids"], ["3514030"])
+            self.assertEqual(case_obj["first_suspicious_txn_id"], "3514030")
+            self.assertFalse(case_obj["written_to_graph"])
+            self.assertEqual(case_obj["graph_case_id"], "")
 
             # Next Best Actions validation
             nba = rec_unc["next_best_actions"]
@@ -421,23 +440,25 @@ class TestBatchRunner(unittest.TestCase):
             self.assertIsInstance(nba["initial"], list)
             self.assertIsInstance(nba["final"], list)
             self.assertTrue(len(nba["initial"]) > 0)
-            self.assertIn("VERIFY_WITH_CUSTOMER", nba["final"])
-            self.assertIn("CREATE_CASE", nba["final"])
+            
+            final_actions = [a["action"] for a in nba["final"]]
+            self.assertIn("VERIFY_WITH_CUSTOMER", final_actions)
+            self.assertIn("CREATE_CASE", final_actions)
+            for act in nba["final"]:
+                self.assertIn("action", act)
+                self.assertIn(act["route"], {"auto", "L1", "L2"})
+                self.assertIn("reason", act)
 
             # SAR validation
             sar = rec_unc["sar"]
             self.assertIn("file", sar)
-            self.assertIn("reasons", sar)
+            self.assertIn("reason", sar)
+            self.assertIn("narrative", sar)
+            self.assertIn("subjects", sar)
+            self.assertIn("total_amount_usd", sar)
+            self.assertIn("activity_dates", sar)
             self.assertIsInstance(sar["file"], bool)
-            self.assertIsInstance(sar["reasons"], list)
-
-            # Tool calls & Latency validation
-            self.assertIsInstance(rec_unc["tool_calls"], list)
-            self.assertTrue(len(rec_unc["tool_calls"]) > 0)
-            self.assertIn("tool", rec_unc["tool_calls"][0])
-            self.assertIn("args", rec_unc["tool_calls"][0])
-            self.assertIn("seconds", rec_unc["latency"])
-            self.assertIn("ms", rec_unc["latency"])
+            self.assertIsInstance(sar["reason"], str)
 
             # 2. Test Legitimate Case Output Contract (HHG-001 regression)
             graph_leg = MockTestGraph(verdict="legitimate")
@@ -449,10 +470,17 @@ class TestBatchRunner(unittest.TestCase):
             self.assertEqual(case_leg["affected_txn_ids"], [])
             # Invariant: legitimate cases have exposure_usd = 0
             self.assertEqual(case_leg["exposure_usd"], 0.0)
+            self.assertEqual(case_leg["first_suspicious_txn_id"], "")
+            self.assertEqual(case_leg["pattern"], "none")
             # Invariant: legitimate cases have sar.file = false
             self.assertFalse(rec_leg["sar"]["file"])
+            self.assertEqual(rec_leg["sar"]["narrative"], "")
+            self.assertEqual(rec_leg["sar"]["subjects"], [])
+            self.assertEqual(rec_leg["sar"]["total_amount_usd"], 0.0)
+            self.assertEqual(rec_leg["sar"]["activity_dates"], [])
             # Invariant: no CLOSE_NO_FRAUD without customer confirmation
-            self.assertNotIn("CLOSE_NO_FRAUD", rec_leg["next_best_actions"]["final"])
+            leg_final_actions = [a["action"] for a in rec_leg["next_best_actions"]["final"]]
+            self.assertNotIn("CLOSE_NO_FRAUD", leg_final_actions)
             # Invariant: no action invented merely because verdict is legitimate
             self.assertEqual(rec_leg["next_best_actions"]["final"], [])
             # Invariant: customer validation request recorded in evidence_requests with assumptions

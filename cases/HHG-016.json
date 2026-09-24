@@ -1,0 +1,239 @@
+{
+  "case_id": "HHG-016",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.8,
+    "pattern": "out_of_region_use",
+    "pattern_description": "Transaction occurred in a new or anomalous billing region without prior cardholder history.",
+    "affected_txn_ids": [
+      "3534820"
+    ],
+    "first_suspicious_txn_id": "3534820",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 59.67,
+    "evidence": [
+      "Customer C09988 reported that they 'never made this $59.67 purchase'.",
+      "The flagged transaction (3534820) has an empty billing region (addr1), which is inconsistent with the customer's historical transactions that have billing regions '100.0' and '382.0'.",
+      "The transaction graph analysis revealed a 'Large shared-card network' fraud signal.",
+      "Similar closed cases were identified as 'out_of_region_use' fraud and were confirmed fraudulent."
+    ],
+    "similar_prior_cases": [
+      "CC-3320",
+      "CC-4198",
+      "CC-4270",
+      "CC-4704",
+      "CC-5087"
+    ],
+    "summary": "The customer reported not making the $59.67 purchase (transaction ID 3534820). This transaction has an empty billing region, which is a significant deviation from the customer's historical transactions that consistently show billing regions '100.0' and '382.0'. Furthermore, the transaction graph analysis identified a 'Large shared-card network' fraud signal associated with this transaction. While the transaction amount and online channel are consistent with the customer's historical behavior, the discrepancy in the billing region and the fraud signal strongly suggest unauthorized activity. The customer's formal response to the validation request is still pending, which prevents a 'confirmed_fraud' verdict, but the existing evidence points towards a high probability of fraud, specifically 'out-of-region-use' fraud, as seen in similar past cases. The exposure is the amount of the flagged transaction.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-016",
+    "customer_id": "C09988",
+    "card_id": "C09988-K1",
+    "flagged_txn_id": "3534820",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C09988 message: 'I never made this $59.67 purchase. Please check my card.' Refers to 3534820.",
+    "risk_score": null,
+    "confidence": 0.9,
+    "fraud_type": "out_of_region_use",
+    "reasoning": "The customer reported not making the $59.67 purchase (transaction ID 3534820). This transaction has an empty billing region, which is a significant deviation from the customer's historical transactions that consistently show billing regions '100.0' and '382.0'. Furthermore, the transaction graph analysis identified a 'Large shared-card network' fraud signal associated with this transaction. While the transaction amount and online channel are consistent with the customer's historical behavior, the discrepancy in the billing region and the fraud signal strongly suggest unauthorized activity. The customer's formal response to the validation request is still pending, which prevents a 'confirmed_fraud' verdict, but the existing evidence points towards a high probability of fraud, specifically 'out-of-region-use' fraud, as seen in similar past cases. The exposure is the amount of the flagged transaction.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3534820",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3534820",
+      "question": "Did you authorize this $59.67 purchase?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.80 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $59.67 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $59.67 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 6 tool call(s) over 7 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 6,
+  "tokens": 0,
+  "latency_s": 26.792,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 26.792,
+  "latency_ms": 26792.0,
+  "latency": {
+    "seconds": 26.792,
+    "ms": 26792.0
+  },
+  "input": {
+    "customer_id": "C09988",
+    "card_id": "C09988-K1",
+    "flagged_txn_id": "3534820",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C09988 message: 'I never made this $59.67 purchase. Please check my card.' Refers to 3534820.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "get_customer_regions",
+      "investigate_transaction_graph",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "get_customer_regions",
+      "investigate_transaction_graph",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 6,
+    "evidence_count": 6,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction amount of $59.67 falls within the customer's historical spending range (mean $41.81, max $134.97). The transaction was made online, which is consistent with the customer's historical channel usage.",
+        "confidence": 0.2,
+        "supporting_evidence": [
+          "Flagged transaction amount ($59.67) is within the customer's typical spending range.",
+          "Transaction channel (online) is consistent with customer's historical channel usage."
+        ],
+        "contradicting_evidence": [
+          "The flagged transaction has an empty billing region (addr1), which is inconsistent with the customer's historical transactions that have billing regions '100.0' and '382.0'.",
+          "The transaction graph shows a 'Large shared-card network' fraud signal.",
+          "Similar prior cases of 'out_of_region_use' fraud have been identified, where customers reported unauthorized transactions in regions they had no history in."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The flagged transaction has an empty billing region, which is a significant deviation from the customer's established spending patterns. This, combined with a 'Large shared-card network' fraud signal and similar historical cases of 'out-of-region-use' fraud, strongly suggests that the transaction is fraudulent and was not authorized by the customer.",
+        "confidence": 0.8,
+        "supporting_evidence": [
+          "Customer C09988 reported that they 'never made this $59.67 purchase'.",
+          "The flagged transaction (3534820) has an empty billing region (addr1), which is inconsistent with the customer's historical transactions that have billing regions '100.0' and '382.0'.",
+          "The transaction graph analysis revealed a 'Large shared-card network' fraud signal.",
+          "Several similar closed cases (e.g., CC-5087, CC-4704, CC-4270, CC-4198, CC-3320) were identified as 'out_of_region_use' fraud, where card-present use occurred in a billing region the cardholder had no history in, and were confirmed fraudulent."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount ($59.67) is within the customer's typical spending range.",
+          "The transaction channel (online) is consistent with the customer's historical channel usage."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3534820",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3534820",
+        "question": "Did you authorize this $59.67 purchase?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 7
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.8,
+    "fraud_type": "out_of_region_use",
+    "exposure": 59.67,
+    "affected_txn_ids": [
+      "3534820"
+    ],
+    "supporting_evidence": [
+      "Customer C09988 reported that they 'never made this $59.67 purchase'.",
+      "The flagged transaction (3534820) has an empty billing region (addr1), which is inconsistent with the customer's historical transactions that have billing regions '100.0' and '382.0'.",
+      "The transaction graph analysis revealed a 'Large shared-card network' fraud signal.",
+      "Similar closed cases were identified as 'out_of_region_use' fraud and were confirmed fraudulent."
+    ],
+    "contradicting_evidence": [
+      "The transaction amount ($59.67) is within the customer's typical spending range.",
+      "The transaction channel (online) is consistent with the customer's historical channel usage.",
+      "Customer response to formal validation is still pending."
+    ],
+    "reasoning": "The customer reported not making the $59.67 purchase (transaction ID 3534820). This transaction has an empty billing region, which is a significant deviation from the customer's historical transactions that consistently show billing regions '100.0' and '382.0'. Furthermore, the transaction graph analysis identified a 'Large shared-card network' fraud signal associated with this transaction. While the transaction amount and online channel are consistent with the customer's historical behavior, the discrepancy in the billing region and the fraud signal strongly suggest unauthorized activity. The customer's formal response to the validation request is still pending, which prevents a 'confirmed_fraud' verdict, but the existing evidence points towards a high probability of fraud, specifically 'out-of-region-use' fraud, as seen in similar past cases. The exposure is the amount of the flagged transaction.",
+    "confidence": 0.9
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.80 >= 0.30), external evidence requested (1 pending request(s)), customer disputed transaction.",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3534820",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3534820",
+        "question": "Did you authorize this $59.67 purchase?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 59.67,
+    "affected_txn_ids": [
+      "3534820"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

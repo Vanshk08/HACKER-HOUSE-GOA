@@ -1,0 +1,252 @@
+{
+  "case_id": "HHG-017",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3450629"
+    ],
+    "first_suspicious_txn_id": "3450629",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 100.09,
+    "evidence": [
+      "Transaction 3450629 has a risk score of 0.57.",
+      "The \"Large shared-card network: 58 related transactions\" signal from the transaction graph could indicate a compromised card.",
+      "A previous similar transaction (3118964) with a high risk score (0.91) was cleared after customer confirmation (Case CC-1383), suggesting this type of transaction might be inherently risky or targeted by fraudsters."
+    ],
+    "similar_prior_cases": [
+      "CC-1383"
+    ],
+    "summary": "The evidence presents a conflicting picture. The transaction was flagged due to a risk score of 0.57 and a \"Large shared-card network\" signal. While this could indicate fraud, further investigation reveals that the customer has a history of online transactions in the same billing region and used a known device. The \"Large shared-card network\" signal appears to refer to the customer's own transaction volume rather than a network of distinct fraudulent cards, as no other cards are connected to C04570-K1. A similar past transaction (3118964) with an even higher risk score (0.91) was ultimately cleared after customer confirmation. However, the customer has not yet responded to the current validation request for transaction 3450629. Without the customer's confirmation, it is not possible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the verdict is uncertain.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-017",
+    "customer_id": "C04570",
+    "card_id": "C04570-K1",
+    "flagged_txn_id": "3450629",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3450629 ($100.09, online) at 0.57. Review and decide.",
+    "risk_score": 0.57,
+    "confidence": 0.7,
+    "fraud_type": "null",
+    "reasoning": "The evidence presents a conflicting picture. The transaction was flagged due to a risk score of 0.57 and a \"Large shared-card network\" signal. While this could indicate fraud, further investigation reveals that the customer has a history of online transactions in the same billing region and used a known device. The \"Large shared-card network\" signal appears to refer to the customer's own transaction volume rather than a network of distinct fraudulent cards, as no other cards are connected to C04570-K1. A similar past transaction (3118964) with an even higher risk score (0.91) was ultimately cleared after customer confirmation. However, the customer has not yet responded to the current validation request for transaction 3450629. Without the customer's confirmation, it is not possible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the verdict is uncertain.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3450629",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3450629",
+      "question": "Did you authorize this online transaction of $100.09 in billing region 204.0?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require step-up multi-factor authentication for high-risk or unconfirmed transaction."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $100.09 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $100.09 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 9 tool call(s) over 4 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 9,
+  "tokens": 0,
+  "latency_s": 43.452,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 43.452,
+  "latency_ms": 43452.0,
+  "latency": {
+    "seconds": 43.452,
+    "ms": 43452.0
+  },
+  "input": {
+    "customer_id": "C04570",
+    "card_id": "C04570-K1",
+    "flagged_txn_id": "3450629",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3450629 ($100.09, online) at 0.57. Review and decide.",
+    "risk_score": 0.57
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "find_shared_origins",
+      "get_connected_cards",
+      "get_customer_device_history",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "find_shared_origins",
+      "get_connected_cards",
+      "get_customer_device_history",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 9,
+    "evidence_count": 9,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is legitimate and consistent with the customer's historical spending patterns. The high risk score is a false positive.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "Customer C04570 has a history of online transactions.",
+          "Customer C04570 has previously transacted in billing region '204.0'.",
+          "A similar online transaction for $99.98 in region '204.0' with a high risk score (0.91) was previously cleared after customer confirmation (Case CC-1383).",
+          "The transaction occurred on a known device ('Windows') last seen at the time of the transaction.",
+          "No rapid transaction sequence or card testing observed around the flagged transaction.",
+          "No other cards are directly connected to C04570-K1, suggesting the 'Large shared-card network' signal refers to the customer's own transaction volume."
+        ],
+        "contradicting_evidence": [
+          "The transaction has a risk score of 0.57, which triggered the review.",
+          "The 'Large shared-card network: 58 related transactions' signal from the transaction graph, although this appears to refer to the customer's own transaction volume rather than a network of distinct fraudulent cards."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The transaction is fraudulent, potentially due to a compromised card, even if the customer has a history of similar transactions. The high risk score is a true positive.",
+        "confidence": 0.3,
+        "supporting_evidence": [
+          "The transaction has a risk score of 0.57.",
+          "The 'Large shared-card network: 58 related transactions' signal from the transaction graph could still indicate that the card is part of a larger compromised set, even if the transactions are all from the same customer.",
+          "The previous cleared case (CC-1383) for a similar transaction in the same region and channel, while cleared, still had a very high risk score (0.91), suggesting this type of transaction might be inherently risky or targeted by fraudsters."
+        ],
+        "contradicting_evidence": [
+          "No new or unusual devices were used for the transaction.",
+          "No rapid transaction sequence or card testing.",
+          "No other cards are directly connected to C04570-K1, suggesting the 'shared-card network' refers to the customer's own transaction volume.",
+          "Customer has a history of online transactions in this region."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3450629",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3450629",
+        "question": "Did you authorize this online transaction of $100.09 in billing region 204.0?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 4
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "null",
+    "exposure": 100.09,
+    "affected_txn_ids": [
+      "3450629"
+    ],
+    "supporting_evidence": [
+      "Transaction 3450629 has a risk score of 0.57.",
+      "The \"Large shared-card network: 58 related transactions\" signal from the transaction graph could indicate a compromised card.",
+      "A previous similar transaction (3118964) with a high risk score (0.91) was cleared after customer confirmation (Case CC-1383), suggesting this type of transaction might be inherently risky or targeted by fraudsters."
+    ],
+    "contradicting_evidence": [
+      "Customer C04570 has a history of online transactions and has previously transacted in billing region \"204.0\".",
+      "The transaction occurred on a known device (\"Windows\") last seen at the time of the transaction.",
+      "No rapid transaction sequence or card testing observed around the flagged transaction.",
+      "No other cards are directly connected to C04570-K1, suggesting the \"Large shared-card network\" signal refers to the customer's own transaction volume.",
+      "Customer validation for transaction 3450629 is pending."
+    ],
+    "reasoning": "The evidence presents a conflicting picture. The transaction was flagged due to a risk score of 0.57 and a \"Large shared-card network\" signal. While this could indicate fraud, further investigation reveals that the customer has a history of online transactions in the same billing region and used a known device. The \"Large shared-card network\" signal appears to refer to the customer's own transaction volume rather than a network of distinct fraudulent cards, as no other cards are connected to C04570-K1. A similar past transaction (3118964) with an even higher risk score (0.91) was ultimately cleared after customer confirmation. However, the customer has not yet responded to the current validation request for transaction 3450629. Without the customer's confirmation, it is not possible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the verdict is uncertain.",
+    "confidence": 0.7
+  },
+  "policy": {
+    "actions": [
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "STEP_UP_AUTH",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30), external evidence requested (1 pending request(s)).",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3450629",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3450629",
+        "question": "Did you authorize this online transaction of $100.09 in billing region 204.0?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 100.09,
+    "affected_txn_ids": [
+      "3450629"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

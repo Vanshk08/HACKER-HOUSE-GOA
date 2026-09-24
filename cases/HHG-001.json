@@ -1,0 +1,194 @@
+{
+  "case_id": "HHG-001",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.85,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3514030"
+    ],
+    "first_suspicious_txn_id": "3514030",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 77.07,
+    "evidence": [
+      "The card (C12382-K1) has a history of four confirmed fraud cases: three 'out_of_region_use' and one 'card_not_present_new_device'.",
+      "Analyst notes from previous cases indicate the card was blocked and reissued multiple times due to fraud.",
+      "Graph investigation identified a 'Large shared-card network: 421 related transactions' as a fraud signal.",
+      "The transaction was flagged with an elevated risk score of 0.61."
+    ],
+    "similar_prior_cases": [
+      "CC-1066",
+      "CC-1673",
+      "CC-2964",
+      "CC-3587"
+    ],
+    "summary": "The primary evidence supporting suspected fraud is the extensive history of confirmed fraud cases associated with this specific card (C12382-K1). The card has been involved in four confirmed fraud incidents within a few months, leading to multiple blocks and reissues. This strongly suggests that the card itself is compromised or the customer is repeatedly targeted. The \"Large shared-card network\" signal from the graph investigation further reinforces the possibility of a broader fraudulent scheme involving this card. While the current transaction (3514030) appears consistent with the customer's historical spending patterns in terms of amount, channel, and region, the overwhelming evidence of prior card compromise and the elevated risk score (0.61) make it highly probable that this transaction is also fraudulent. The consistency with historical patterns could be an attempt to mimic legitimate activity or simply a characteristic of the compromised card being used in a familiar context. Given the strong historical pattern of fraud on this card, despite the current transaction's superficial legitimacy, a verdict of suspected fraud is warranted. The exposure is limited to the flagged transaction as no other fraudulent transactions have been identified in this specific instance.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-001",
+    "customer_id": "C12382",
+    "card_id": "C12382-K1",
+    "flagged_txn_id": "3514030",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3514030 ($77.07, in billing region 444.0) at 0.61. Review and decide.",
+    "risk_score": 0.61,
+    "confidence": 0.9,
+    "fraud_type": "card_compromise",
+    "reasoning": "The primary evidence supporting suspected fraud is the extensive history of confirmed fraud cases associated with this specific card (C12382-K1). The card has been involved in four confirmed fraud incidents within a few months, leading to multiple blocks and reissues. This strongly suggests that the card itself is compromised or the customer is repeatedly targeted. The \"Large shared-card network\" signal from the graph investigation further reinforces the possibility of a broader fraudulent scheme involving this card. While the current transaction (3514030) appears consistent with the customer's historical spending patterns in terms of amount, channel, and region, the overwhelming evidence of prior card compromise and the elevated risk score (0.61) make it highly probable that this transaction is also fraudulent. The consistency with historical patterns could be an attempt to mimic legitimate activity or simply a characteristic of the compromised card being used in a familiar context. Given the strong historical pattern of fraud on this card, despite the current transaction's superficial legitimacy, a verdict of suspected fraud is warranted. The exposure is limited to the flagged transaction as no other fraudulent transactions have been identified in this specific instance.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.85 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $77.07 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $77.07 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 5 tool call(s) over 6 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 5,
+  "tokens": 0,
+  "latency_s": 29.846,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 29.846,
+  "latency_ms": 29846.0,
+  "latency": {
+    "seconds": 29.846,
+    "ms": 29846.0
+  },
+  "input": {
+    "customer_id": "C12382",
+    "card_id": "C12382-K1",
+    "flagged_txn_id": "3514030",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3514030 ($77.07, in billing region 444.0) at 0.61. Review and decide.",
+    "risk_score": 0.61
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history"
+    ],
+    "tool_call_count": 5,
+    "evidence_count": 5,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction amount ($77.07), channel (in-person), and billing region (444.0) are all consistent with the customer's historical spending patterns. There are no rapid transaction sequences or unusual timing around the flagged transaction.",
+        "confidence": 0.1,
+        "supporting_evidence": [
+          "Transaction amount ($77.07) is within the customer's typical spending range (mean $115.60, min $14.95, max $845.01).",
+          "Customer has a history of transactions in billing region '444.0'.",
+          "Customer uses both 'in_person' and 'online' channels.",
+          "No previous or subsequent transactions within a 60-minute window of the flagged transaction."
+        ],
+        "contradicting_evidence": [
+          "The transaction was flagged with a risk score of 0.61.",
+          "The card (C12382-K1) has been associated with four confirmed fraud cases in the past (CC-1066, CC-1673, CC-2964, CC-3587).",
+          "Graph investigation revealed a 'Large shared-card network: 421 related transactions' as a fraud signal."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The flagged transaction is likely fraudulent due to a history of confirmed fraud on the associated card and the presence of a large shared-card network signal, indicating a compromised card or repeated targeting of the customer.",
+        "confidence": 0.9,
+        "supporting_evidence": [
+          "The card (C12382-K1) has a history of four confirmed fraud cases: three 'out_of_region_use' and one 'card_not_present_new_device'.",
+          "Analyst notes from previous cases indicate the card was blocked and reissued multiple times due to fraud.",
+          "Graph investigation identified a 'Large shared-card network: 421 related transactions' as a fraud signal, suggesting the card may be part of a broader fraudulent scheme.",
+          "The transaction was flagged with an elevated risk score of 0.61."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount, channel, and billing region are consistent with the customer's historical legitimate activity.",
+          "No rapid transaction sequence was observed around the flagged transaction."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.85,
+    "fraud_type": "card_compromise",
+    "exposure": 77.07,
+    "affected_txn_ids": [
+      "3514030"
+    ],
+    "supporting_evidence": [
+      "The card (C12382-K1) has a history of four confirmed fraud cases: three 'out_of_region_use' and one 'card_not_present_new_device'.",
+      "Analyst notes from previous cases indicate the card was blocked and reissued multiple times due to fraud.",
+      "Graph investigation identified a 'Large shared-card network: 421 related transactions' as a fraud signal.",
+      "The transaction was flagged with an elevated risk score of 0.61."
+    ],
+    "contradicting_evidence": [
+      "The transaction amount ($77.07) is within the customer's typical spending range (mean $115.60, min $14.95, max $845.01).",
+      "Customer has a history of transactions in billing region '444.0'.",
+      "Customer uses both 'in_person' and 'online' channels.",
+      "No previous or subsequent transactions within a 60-minute window of the flagged transaction."
+    ],
+    "reasoning": "The primary evidence supporting suspected fraud is the extensive history of confirmed fraud cases associated with this specific card (C12382-K1). The card has been involved in four confirmed fraud incidents within a few months, leading to multiple blocks and reissues. This strongly suggests that the card itself is compromised or the customer is repeatedly targeted. The \"Large shared-card network\" signal from the graph investigation further reinforces the possibility of a broader fraudulent scheme involving this card. While the current transaction (3514030) appears consistent with the customer's historical spending patterns in terms of amount, channel, and region, the overwhelming evidence of prior card compromise and the elevated risk score (0.61) make it highly probable that this transaction is also fraudulent. The consistency with historical patterns could be an attempt to mimic legitimate activity or simply a characteristic of the compromised card being used in a familiar context. Given the strong historical pattern of fraud on this card, despite the current transaction's superficial legitimacy, a verdict of suspected fraud is warranted. The exposure is limited to the flagged transaction as no other fraudulent transactions have been identified in this specific instance.",
+    "confidence": 0.9
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.85 >= 0.30).",
+    "requires_customer_response": false,
+    "evidence_requests": [],
+    "exposure": 77.07,
+    "affected_txn_ids": [
+      "3514030"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

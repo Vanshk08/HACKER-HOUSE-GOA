@@ -1,0 +1,184 @@
+{
+  "case_id": "HHG-014",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.9,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "Card-not-present online transaction executed from an unrecognized or shared device profile.",
+    "affected_txn_ids": [
+      "3478561"
+    ],
+    "first_suspicious_txn_id": "3478561",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "SM-G935F Build/NRD90M"
+    ],
+    "exposure_usd": 74.96,
+    "evidence": [
+      "The device 'SM-G935F Build/NRD90M' used for transaction 3478561 is shared across 13 different customers and 20 transactions.",
+      "There are 10 confirmed fraud cases linked to the device 'SM-G935F Build/NRD90M', indicating a pattern of fraudulent activity.",
+      "The analyst's trigger text highlighted an 'unusual device profile' being used across 'several cards this month'.",
+      "The transaction graph shows a 'Large shared-card network: 84 related transactions' associated with the flagged transaction.",
+      "Transaction 3478561 was an online purchase from a new device for customer C13487."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The evidence strongly suggests that transaction 3478561 is part of a coordinated fraud scheme. The most compelling evidence is the use of the device 'SM-G935F Build/NRD90M', which is shared across 13 different customer accounts and has been linked to 10 confirmed fraud cases. This aligns with the analyst's initial trigger regarding an 'unusual device profile' across 'several cards'. While the customer C13487 has historical activity in the transaction's region and uses online channels, the presence of a new, highly suspicious device for an online transaction, coupled with the extensive network of related fraudulent activity, outweighs the legitimate historical patterns. The 'Large shared-card network' further supports the hypothesis of a coordinated effort. Although the customer has not formally denied the transaction, the overwhelming evidence points towards fraud. The fraud type is likely 'card_not_present_new_device' given the online channel and the new, shared device.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-014",
+    "customer_id": "C13487",
+    "card_id": "C13487-K1",
+    "flagged_txn_id": "3478561",
+    "trigger_type": "analyst_request",
+    "trigger_text": "Analyst request: several cards this month show purchases from the same unusual device profile. Review transaction 3478561 on card C13487-K1 and look for related activity.",
+    "risk_score": null,
+    "confidence": 0.95,
+    "fraud_type": "card_not_present_new_device",
+    "reasoning": "The evidence strongly suggests that transaction 3478561 is part of a coordinated fraud scheme. The most compelling evidence is the use of the device 'SM-G935F Build/NRD90M', which is shared across 13 different customer accounts and has been linked to 10 confirmed fraud cases. This aligns with the analyst's initial trigger regarding an 'unusual device profile' across 'several cards'. While the customer C13487 has historical activity in the transaction's region and uses online channels, the presence of a new, highly suspicious device for an online transaction, coupled with the extensive network of related fraudulent activity, outweighs the legitimate historical patterns. The 'Large shared-card network' further supports the hypothesis of a coordinated effort. Although the customer has not formally denied the transaction, the overwhelming evidence points towards fraud. The fraud type is likely 'card_not_present_new_device' given the online channel and the new, shared device.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "ESCALATE_TO_ANALYST",
+        "route": "L2",
+        "reason": "Initial intake triage: route analyst alert/request to L2 analyst."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.90 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $74.96 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $74.96 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 6 tool call(s) over 7 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 6,
+  "tokens": 0,
+  "latency_s": 37.748,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 37.748,
+  "latency_ms": 37748.0,
+  "latency": {
+    "seconds": 37.748,
+    "ms": 37748.0
+  },
+  "input": {
+    "customer_id": "C13487",
+    "card_id": "C13487-K1",
+    "flagged_txn_id": "3478561",
+    "trigger_type": "analyst_request",
+    "trigger_text": "Analyst request: several cards this month show purchases from the same unusual device profile. Review transaction 3478561 on card C13487-K1 and look for related activity.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "investigate_transaction_graph",
+      "get_customer_device_history",
+      "get_device_connections",
+      "get_customer_history",
+      "find_related_fraud"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "investigate_transaction_graph",
+      "get_customer_device_history",
+      "get_device_connections",
+      "get_customer_history",
+      "find_related_fraud"
+    ],
+    "tool_call_count": 6,
+    "evidence_count": 6,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is a legitimate purchase by the customer C13487 using their card C13487-K1. The customer has a history of online and in-person transactions in regions 191.0 and 272.0.",
+        "confidence": 0.1,
+        "supporting_evidence": [
+          "Customer C13487 has historical activity in region 191.0 where the transaction occurred.",
+          "Customer C13487 uses both online and in-person channels."
+        ],
+        "contradicting_evidence": [
+          "The device 'SM-G935F Build/NRD90M' used for the transaction is shared across 13 different customers.",
+          "There are 10 confirmed fraud cases related to the device 'SM-G935F Build/NRD90M', indicating a pattern of fraudulent activity associated with this device."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Coordinated Fraud Scheme",
+        "description": "The transaction is part of a coordinated fraud scheme, likely involving the compromise of multiple cards and the use of a shared device ('SM-G935F Build/NRD90M') to execute fraudulent purchases. The analyst's trigger text explicitly mentioned 'several cards this month show purchases from the same unusual device profile'.",
+        "confidence": 0.9,
+        "supporting_evidence": [
+          "The device 'SM-G935F Build/NRD90M' is associated with 13 different customers and 20 transactions, indicating widespread use.",
+          "There are 10 confirmed fraud cases linked to the device 'SM-G935F Build/NRD90M', suggesting a history of fraudulent activity.",
+          "The analyst's trigger text specifically highlighted an 'unusual device profile' being used across 'several cards this month', which is consistent with the findings.",
+          "The transaction graph shows a 'Large shared-card network: 84 related transactions', further supporting a coordinated effort."
+        ],
+        "contradicting_evidence": [
+          "The customer C13487 has historical activity in the region where the transaction occurred."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 7
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.9,
+    "fraud_type": "card_not_present_new_device",
+    "exposure": 74.96,
+    "affected_txn_ids": [
+      "3478561"
+    ],
+    "supporting_evidence": [
+      "The device 'SM-G935F Build/NRD90M' used for transaction 3478561 is shared across 13 different customers and 20 transactions.",
+      "There are 10 confirmed fraud cases linked to the device 'SM-G935F Build/NRD90M', indicating a pattern of fraudulent activity.",
+      "The analyst's trigger text highlighted an 'unusual device profile' being used across 'several cards this month'.",
+      "The transaction graph shows a 'Large shared-card network: 84 related transactions' associated with the flagged transaction.",
+      "Transaction 3478561 was an online purchase from a new device for customer C13487."
+    ],
+    "contradicting_evidence": [
+      "Customer C13487 has historical activity in region 191.0 where transaction 3478561 occurred.",
+      "Customer C13487 has a history of both online and in-person transactions."
+    ],
+    "reasoning": "The evidence strongly suggests that transaction 3478561 is part of a coordinated fraud scheme. The most compelling evidence is the use of the device 'SM-G935F Build/NRD90M', which is shared across 13 different customer accounts and has been linked to 10 confirmed fraud cases. This aligns with the analyst's initial trigger regarding an 'unusual device profile' across 'several cards'. While the customer C13487 has historical activity in the transaction's region and uses online channels, the presence of a new, highly suspicious device for an online transaction, coupled with the extensive network of related fraudulent activity, outweighs the legitimate historical patterns. The 'Large shared-card network' further supports the hypothesis of a coordinated effort. Although the customer has not formally denied the transaction, the overwhelming evidence points towards fraud. The fraud type is likely 'card_not_present_new_device' given the online channel and the new, shared device.",
+    "confidence": 0.95
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.90 >= 0.30).",
+    "requires_customer_response": false,
+    "evidence_requests": [],
+    "exposure": 74.96,
+    "affected_txn_ids": [
+      "3478561"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

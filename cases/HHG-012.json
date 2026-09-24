@@ -1,0 +1,196 @@
+{
+  "case_id": "HHG-012",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.8,
+    "pattern": "out_of_region_use",
+    "pattern_description": "Transaction occurred in a new or anomalous billing region without prior cardholder history.",
+    "affected_txn_ids": [
+      "3553342"
+    ],
+    "first_suspicious_txn_id": "3553342",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 30.91,
+    "evidence": [
+      "Transaction 3553342 occurred in billing region 494.0, but get_region_activity shows no prior transactions for customer C05876 in this region.",
+      "The investigate_transaction_graph tool revealed a 'Large shared-card network: 987 related transactions', indicating potential compromise or fraud ring activity.",
+      "Similar closed cases of 'out_of_region_use' fraud were found, where card-present transactions in new billing regions were confirmed fraudulent.",
+      "The transaction was flagged with a risk score of 0.55.",
+      "The customer's device history shows a recent device change on 2016-12-15, just three days before the flagged transaction on 2016-12-18."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The evidence strongly suggests suspected fraud due to the transaction occurring in a new billing region (494.0) where the customer has no prior activity, as confirmed by the get_region_activity tool. This is a significant indicator of 'out-of-region use' fraud. The 'Large shared-card network' identified by the investigate_transaction_graph tool, with 987 related transactions, further strengthens the fraud hypothesis, suggesting a potentially compromised card or involvement in a fraud ring. The presence of similar closed cases of 'out_of_region_use' fraud provides a historical precedent. Additionally, a recent device change three days prior to the transaction could be a red flag for account takeover. While the transaction amount is relatively small and there's no immediate transaction velocity, these factors are outweighed by the strong indicators of out-of-region use and network-level fraud. The initial risk score of 0.55 also aligns with a higher likelihood of fraud. The conflicting information regarding the customer's historical activity in region 494.0 (get_card_history not filtering by region, get_region_activity showing no transactions, but investigate_transaction_graph confirming region evidence) points to tool limitations rather than contradicting the core finding of unusual regional activity for this customer.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-012",
+    "customer_id": "C05876",
+    "card_id": "C05876-K2",
+    "flagged_txn_id": "3553342",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3553342 ($30.91, in billing region 494.0) at 0.55. Review and decide.",
+    "risk_score": 0.55,
+    "confidence": 0.9,
+    "fraud_type": "out_of_region_use",
+    "reasoning": "The evidence strongly suggests suspected fraud due to the transaction occurring in a new billing region (494.0) where the customer has no prior activity, as confirmed by the get_region_activity tool. This is a significant indicator of 'out-of-region use' fraud. The 'Large shared-card network' identified by the investigate_transaction_graph tool, with 987 related transactions, further strengthens the fraud hypothesis, suggesting a potentially compromised card or involvement in a fraud ring. The presence of similar closed cases of 'out_of_region_use' fraud provides a historical precedent. Additionally, a recent device change three days prior to the transaction could be a red flag for account takeover. While the transaction amount is relatively small and there's no immediate transaction velocity, these factors are outweighed by the strong indicators of out-of-region use and network-level fraud. The initial risk score of 0.55 also aligns with a higher likelihood of fraud. The conflicting information regarding the customer's historical activity in region 494.0 (get_card_history not filtering by region, get_region_activity showing no transactions, but investigate_transaction_graph confirming region evidence) points to tool limitations rather than contradicting the core finding of unusual regional activity for this customer.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.80 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $30.91 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $30.91 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 8 tool call(s) over 4 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 8,
+  "tokens": 0,
+  "latency_s": 34.333,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 34.333,
+  "latency_ms": 34333.0,
+  "latency": {
+    "seconds": 34.333,
+    "ms": 34333.0
+  },
+  "input": {
+    "customer_id": "C05876",
+    "card_id": "C05876-K2",
+    "flagged_txn_id": "3553342",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3553342 ($30.91, in billing region 494.0) at 0.55. Review and decide.",
+    "risk_score": 0.55
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history",
+      "get_customer_device_history",
+      "get_region_activity",
+      "get_card_history"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history",
+      "get_customer_device_history",
+      "get_region_activity",
+      "get_card_history"
+    ],
+    "tool_call_count": 8,
+    "evidence_count": 8,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is legitimate, as the customer has a history of numerous transactions and the amount is relatively small. The risk score, while elevated, is not definitive proof of fraud. The customer has also used multiple devices, and the recent device change might be a normal behavior.",
+        "confidence": 0.3,
+        "supporting_evidence": [
+          "Customer C05876 has a total of 991 transactions with a mean amount of $80.06, and the flagged transaction is $30.91, which is below the average.",
+          "The transaction sequence shows no rapid succession of transactions, indicating no card testing or velocity bursts."
+        ],
+        "contradicting_evidence": [
+          "The transaction occurred in region 494.0, and the `get_region_activity` tool returned no historical transactions for this customer in this region, suggesting it might be an out-of-region transaction.",
+          "The `investigate_transaction_graph` tool identified a 'Large shared-card network: 987 related transactions', which could indicate a compromised card or a fraud ring.",
+          "There are similar closed cases of 'out_of_region_use' fraud where card-present transactions in a new billing region were confirmed fraudulent."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud - Out-of-Region Use",
+        "description": "The transaction is likely fraudulent due to it being an out-of-region transaction for this specific card, coupled with the presence of a large shared-card network and similar historical fraud patterns. The elevated risk score further supports this hypothesis.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "The transaction 3553342 occurred in billing region 494.0, but the `get_region_activity` tool shows no prior transactions for customer C05876 in this region, suggesting it's an unusual location for this customer.",
+          "The `investigate_transaction_graph` tool revealed a 'Large shared-card network: 987 related transactions', which is a strong indicator of potential fraud, possibly a compromised card or a fraud syndicate.",
+          "Several similar closed cases of 'out_of_region_use' fraud were found, where card-present transactions in new billing regions were confirmed fraudulent. This provides a precedent for this type of fraud.",
+          "The transaction was flagged with a risk score of 0.55, indicating a higher likelihood of fraud.",
+          "The customer's device history shows a recent device change (from 2016-12-15), which could be a red flag for account takeover or unauthorized use, especially given the transaction date of 2016-12-18."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount ($30.91) is relatively small compared to the customer's average transaction amount ($80.06), which might suggest a legitimate, low-value purchase.",
+          "There are no immediate previous or subsequent transactions within a 60-minute window, which might contradict a 'card testing' fraud pattern."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 4
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.8,
+    "fraud_type": "out_of_region_use",
+    "exposure": 30.91,
+    "affected_txn_ids": [
+      "3553342"
+    ],
+    "supporting_evidence": [
+      "Transaction 3553342 occurred in billing region 494.0, but get_region_activity shows no prior transactions for customer C05876 in this region.",
+      "The investigate_transaction_graph tool revealed a 'Large shared-card network: 987 related transactions', indicating potential compromise or fraud ring activity.",
+      "Similar closed cases of 'out_of_region_use' fraud were found, where card-present transactions in new billing regions were confirmed fraudulent.",
+      "The transaction was flagged with a risk score of 0.55.",
+      "The customer's device history shows a recent device change on 2016-12-15, just three days before the flagged transaction on 2016-12-18."
+    ],
+    "contradicting_evidence": [
+      "The transaction amount ($30.91) is relatively small compared to the customer's average transaction amount ($80.06).",
+      "There are no immediate previous or subsequent transactions within a 60-minute window, which might contradict a 'card testing' fraud pattern.",
+      "Customer C05876 has a total of 991 transactions with a mean amount of $80.06, and the flagged transaction is $30.91, which is below the average.",
+      "The transaction sequence shows no rapid succession of transactions, indicating no card testing or velocity bursts."
+    ],
+    "reasoning": "The evidence strongly suggests suspected fraud due to the transaction occurring in a new billing region (494.0) where the customer has no prior activity, as confirmed by the get_region_activity tool. This is a significant indicator of 'out-of-region use' fraud. The 'Large shared-card network' identified by the investigate_transaction_graph tool, with 987 related transactions, further strengthens the fraud hypothesis, suggesting a potentially compromised card or involvement in a fraud ring. The presence of similar closed cases of 'out_of_region_use' fraud provides a historical precedent. Additionally, a recent device change three days prior to the transaction could be a red flag for account takeover. While the transaction amount is relatively small and there's no immediate transaction velocity, these factors are outweighed by the strong indicators of out-of-region use and network-level fraud. The initial risk score of 0.55 also aligns with a higher likelihood of fraud. The conflicting information regarding the customer's historical activity in region 494.0 (get_card_history not filtering by region, get_region_activity showing no transactions, but investigate_transaction_graph confirming region evidence) points to tool limitations rather than contradicting the core finding of unusual regional activity for this customer.",
+    "confidence": 0.9
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.80 >= 0.30).",
+    "requires_customer_response": false,
+    "evidence_requests": [],
+    "exposure": 30.91,
+    "affected_txn_ids": [
+      "3553342"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

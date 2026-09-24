@@ -1,0 +1,197 @@
+{
+  "case_id": "HHG-003",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.9,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3530164"
+    ],
+    "first_suspicious_txn_id": "3530164",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 49.0,
+    "evidence": [
+      "Customer C08623 explicitly stated: 'I never made this $49.00 purchase. Please check my card.'",
+      "Card 'card:360e5edc60a390a25e2f38d8a4834697' was involved in 5 previous confirmed fraud cases (CC-2817, CC-2935, CC-3327, CC-3682, CC-4957).",
+      "Previous fraud cases include 'out_of_region_use' where the card was retained, indicating potential card compromise without physical loss.",
+      "One previous fraud case (CC-3327) was an 'account_takeover' with mixed-channel activity and an unfamiliar device, suggesting broader account compromise."
+    ],
+    "similar_prior_cases": [
+      "CC-2817",
+      "CC-2935",
+      "CC-3327",
+      "CC-3682",
+      "CC-4957"
+    ],
+    "summary": "The customer explicitly reported not making the $49.00 purchase (transaction ID 3530164). This claim is strongly supported by the card's extensive history of confirmed fraud. The card 'card:360e5edc60a390a25e2f38d8a4834697' has been associated with five previous confirmed fraud cases (CC-2817, CC-2935, CC-3327, CC-3682, CC-4957). Several of these cases were categorized as 'out_of_region_use' where the cardholder retained the card, indicating a pattern of card compromise without physical loss. Additionally, one case (CC-3327) was an 'account_takeover', suggesting a broader compromise of the customer's account. While the current transaction's amount, region, and channel are consistent with the customer's historical legitimate activity and the initial risk score was low (0.4), the customer's explicit denial and the strong pattern of prior fraud on this specific card and customer account significantly outweigh these factors. The 'Large shared-card network' signal from the transaction graph, while not directly proving fraud, could be indicative of the repeated compromise of this card or customer account. Given the customer's report and the compelling history of fraud, it is highly probable that this transaction is also unauthorized, despite appearing superficially legitimate.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-003",
+    "customer_id": "C08623",
+    "card_id": "C08623-K2",
+    "flagged_txn_id": "3530164",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C08623 message: 'I never made this $49.00 purchase. Please check my card.' Refers to 3530164.",
+    "risk_score": null,
+    "confidence": 0.95,
+    "fraud_type": "card_compromise",
+    "reasoning": "The customer explicitly reported not making the $49.00 purchase (transaction ID 3530164). This claim is strongly supported by the card's extensive history of confirmed fraud. The card 'card:360e5edc60a390a25e2f38d8a4834697' has been associated with five previous confirmed fraud cases (CC-2817, CC-2935, CC-3327, CC-3682, CC-4957). Several of these cases were categorized as 'out_of_region_use' where the cardholder retained the card, indicating a pattern of card compromise without physical loss. Additionally, one case (CC-3327) was an 'account_takeover', suggesting a broader compromise of the customer's account. While the current transaction's amount, region, and channel are consistent with the customer's historical legitimate activity and the initial risk score was low (0.4), the customer's explicit denial and the strong pattern of prior fraud on this specific card and customer account significantly outweigh these factors. The 'Large shared-card network' signal from the transaction graph, while not directly proving fraud, could be indicative of the repeated compromise of this card or customer account. Given the customer's report and the compelling history of fraud, it is highly probable that this transaction is also unauthorized, despite appearing superficially legitimate.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.90 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $49.00 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $49.00 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 6 tool call(s) over 7 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 6,
+  "tokens": 0,
+  "latency_s": 44.237,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 44.237,
+  "latency_ms": 44237.0,
+  "latency": {
+    "seconds": 44.237,
+    "ms": 44237.0
+  },
+  "input": {
+    "customer_id": "C08623",
+    "card_id": "C08623-K2",
+    "flagged_txn_id": "3530164",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C08623 message: 'I never made this $49.00 purchase. Please check my card.' Refers to 3530164.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "investigate_transaction_graph",
+      "get_connected_cards",
+      "find_related_fraud"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "investigate_transaction_graph",
+      "get_connected_cards",
+      "find_related_fraud"
+    ],
+    "tool_call_count": 6,
+    "evidence_count": 6,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction of $49.00 is within the customer's typical spending range and occurred in a known billing region and channel for the customer. The initial risk score was low (0.4).",
+        "confidence": 0.1,
+        "supporting_evidence": [
+          "Transaction amount ($49.00) is within the customer's historical spending range (mean $129.36).",
+          "Transaction occurred in billing region '330.0', which is a historical region for the customer.",
+          "Transaction channel 'in_person' is a historical channel for the customer.",
+          "Initial risk score for the transaction was 0.4 (low)."
+        ],
+        "contradicting_evidence": [
+          "Customer explicitly reported not making the purchase.",
+          "Customer and card have been associated with 5 previous confirmed fraud cases.",
+          "Previous fraud cases include 'out_of_region_use' where the card was retained by the customer, and 'account_takeover'."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The customer explicitly reported not making the $49.00 purchase. The customer and the card used in the flagged transaction have a history of 5 confirmed fraud cases, including 'out_of_region_use' and 'account_takeover'. This suggests a pattern of compromise for this card or customer account.",
+        "confidence": 0.9,
+        "supporting_evidence": [
+          "Customer C08623 explicitly stated: 'I never made this $49.00 purchase. Please check my card.'",
+          "Card 'card:360e5edc60a390a25e2f38d8a4834697' (used in the flagged transaction) was involved in 5 previous confirmed fraud cases (CC-2817, CC-2935, CC-3327, CC-3682, CC-4957).",
+          "Previous fraud cases include 'out_of_region_use' where the card was retained, indicating potential card compromise without physical loss.",
+          "One previous fraud case (CC-3327) was an 'account_takeover' with mixed-channel activity and an unfamiliar device, suggesting broader account compromise."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount, region, and channel are consistent with the customer's historical legitimate activity.",
+          "The initial risk score for the transaction was low (0.4)."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 7
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.9,
+    "fraud_type": "card_compromise",
+    "exposure": 49.0,
+    "affected_txn_ids": [
+      "3530164"
+    ],
+    "supporting_evidence": [
+      "Customer C08623 explicitly stated: 'I never made this $49.00 purchase. Please check my card.'",
+      "Card 'card:360e5edc60a390a25e2f38d8a4834697' was involved in 5 previous confirmed fraud cases (CC-2817, CC-2935, CC-3327, CC-3682, CC-4957).",
+      "Previous fraud cases include 'out_of_region_use' where the card was retained, indicating potential card compromise without physical loss.",
+      "One previous fraud case (CC-3327) was an 'account_takeover' with mixed-channel activity and an unfamiliar device, suggesting broader account compromise."
+    ],
+    "contradicting_evidence": [
+      "The transaction amount ($49.00) is within the customer's historical spending range (mean $129.36).",
+      "Transaction occurred in billing region '330.0', which is a historical region for the customer.",
+      "Transaction channel 'in_person' is a historical channel for the customer.",
+      "Initial risk score for the transaction was 0.4 (low)."
+    ],
+    "reasoning": "The customer explicitly reported not making the $49.00 purchase (transaction ID 3530164). This claim is strongly supported by the card's extensive history of confirmed fraud. The card 'card:360e5edc60a390a25e2f38d8a4834697' has been associated with five previous confirmed fraud cases (CC-2817, CC-2935, CC-3327, CC-3682, CC-4957). Several of these cases were categorized as 'out_of_region_use' where the cardholder retained the card, indicating a pattern of card compromise without physical loss. Additionally, one case (CC-3327) was an 'account_takeover', suggesting a broader compromise of the customer's account. While the current transaction's amount, region, and channel are consistent with the customer's historical legitimate activity and the initial risk score was low (0.4), the customer's explicit denial and the strong pattern of prior fraud on this specific card and customer account significantly outweigh these factors. The 'Large shared-card network' signal from the transaction graph, while not directly proving fraud, could be indicative of the repeated compromise of this card or customer account. Given the customer's report and the compelling history of fraud, it is highly probable that this transaction is also unauthorized, despite appearing superficially legitimate.",
+    "confidence": 0.95
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.90 >= 0.30), customer disputed transaction.",
+    "requires_customer_response": false,
+    "evidence_requests": [],
+    "exposure": 49.0,
+    "affected_txn_ids": [
+      "3530164"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

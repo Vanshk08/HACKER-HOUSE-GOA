@@ -1,0 +1,213 @@
+{
+  "case_id": "HHG-007",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "account_takeover",
+    "pattern_description": "Account compromise involving unfamiliar device and anomalous access patterns.",
+    "affected_txn_ids": [
+      "3514948"
+    ],
+    "first_suspicious_txn_id": "3514948",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "SM-G950U Build/R16NW"
+    ],
+    "exposure_usd": 111.92,
+    "evidence": [
+      "Transaction 3514948 was flagged with a high risk score of 0.87.",
+      "A new device (\"SM-G950U Build/R16NW\") was first seen on the same day as the flagged transaction (2016-12-05).",
+      "The transaction graph shows a \"Large shared-card network: 2787 related transactions\" signal."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The investigation presents conflicting evidence regarding transaction 3514948. On one hand, several factors strongly suggest the transaction is legitimate: the amount is within the customer's normal spending range, it occurred in their primary billing region, the card has a long and clean history, and the channel aligns with past behavior. Furthermore, no rapid transaction sequence was detected, and the network risk assessment is low despite a \"Large shared-card network\" signal. On the other hand, the high risk score of 0.87 and, more significantly, the appearance of a new device (\"SM-G950U Build/R16NW\") on the same day as the transaction are strong indicators of potential fraud, possibly an account takeover. The \"Large shared-card network\" signal, while assessed as low risk, still adds a layer of suspicion. Without customer validation, it is impossible to definitively determine if the new device usage was authorized or if the high risk score is a false positive. Therefore, the verdict remains uncertain, leaning towards a 50% probability of fraud due to the new device activity.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-007",
+    "customer_id": "C09933",
+    "card_id": "C09933-K2",
+    "flagged_txn_id": "3514948",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3514948 ($111.92, in billing region 264.0) at 0.87. Review and decide.",
+    "risk_score": 0.87,
+    "confidence": 0.75,
+    "fraud_type": "account_takeover",
+    "reasoning": "The investigation presents conflicting evidence regarding transaction 3514948. On one hand, several factors strongly suggest the transaction is legitimate: the amount is within the customer's normal spending range, it occurred in their primary billing region, the card has a long and clean history, and the channel aligns with past behavior. Furthermore, no rapid transaction sequence was detected, and the network risk assessment is low despite a \"Large shared-card network\" signal. On the other hand, the high risk score of 0.87 and, more significantly, the appearance of a new device (\"SM-G950U Build/R16NW\") on the same day as the transaction are strong indicators of potential fraud, possibly an account takeover. The \"Large shared-card network\" signal, while assessed as low risk, still adds a layer of suspicion. Without customer validation, it is impossible to definitively determine if the new device usage was authorized or if the high risk score is a false positive. Therefore, the verdict remains uncertain, leaning towards a 50% probability of fraud due to the new device activity.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Route to L1 operations for cardholder transaction confirmation."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $111.92 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $111.92 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 9 tool call(s) over 10 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 9,
+  "tokens": 0,
+  "latency_s": 64.352,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 64.352,
+  "latency_ms": 64352.0,
+  "latency": {
+    "seconds": 64.352,
+    "ms": 64352.0
+  },
+  "input": {
+    "customer_id": "C09933",
+    "card_id": "C09933-K2",
+    "flagged_txn_id": "3514948",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3514948 ($111.92, in billing region 264.0) at 0.87. Review and decide.",
+    "risk_score": 0.87
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_customer_device_history",
+      "get_customer_regions",
+      "get_connected_cards",
+      "get_device_connections"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_customer_device_history",
+      "get_customer_regions",
+      "get_connected_cards",
+      "get_device_connections"
+    ],
+    "tool_call_count": 9,
+    "evidence_count": 9,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction appears to be a legitimate purchase by the customer, consistent with their spending patterns, card usage, and primary billing region. The high risk score might be a false positive.",
+        "confidence": 0.6,
+        "supporting_evidence": [
+          "Transaction amount ($111.92) is within customer's normal spending range.",
+          "Transaction occurred in customer's primary billing region (264.0).",
+          "Card used has extensive legitimate history with low risk scores on previous transactions.",
+          "Transaction channel was 'in_person', consistent with historical usage.",
+          "No rapid transaction sequence detected.",
+          "No other cards connected to the card used.",
+          "Network risk assessment is 'LOW' (score 15)."
+        ],
+        "contradicting_evidence": [
+          "Transaction flagged with a high risk score of 0.87.",
+          "A new device was first seen on the same day as the flagged transaction.",
+          "Transaction graph shows a 'Large shared-card network: 2787 related transactions' signal."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud (Account Takeover/New Device Fraud)",
+        "description": "The transaction is potentially fraudulent, possibly due to an account takeover or unauthorized use of the card via a newly introduced device, despite other indicators suggesting legitimacy.",
+        "confidence": 0.4,
+        "supporting_evidence": [
+          "Transaction flagged with a high risk score of 0.87.",
+          "A new device ('SM-G950U Build/R16NW') was first seen on the same day as the flagged transaction (2016-12-05).",
+          "Transaction graph shows a 'Large shared-card network: 2787 related transactions' signal."
+        ],
+        "contradicting_evidence": [
+          "Transaction amount is consistent with customer's normal spending.",
+          "Transaction occurred in customer's primary billing region.",
+          "Card used has extensive legitimate history.",
+          "No rapid transaction sequence detected.",
+          "No other cards connected to the card used.",
+          "Network risk assessment is 'LOW' (score 15)."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 10
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "account_takeover",
+    "exposure": 111.92,
+    "affected_txn_ids": [
+      "3514948"
+    ],
+    "supporting_evidence": [
+      "Transaction 3514948 was flagged with a high risk score of 0.87.",
+      "A new device (\"SM-G950U Build/R16NW\") was first seen on the same day as the flagged transaction (2016-12-05).",
+      "The transaction graph shows a \"Large shared-card network: 2787 related transactions\" signal."
+    ],
+    "contradicting_evidence": [
+      "Transaction amount ($111.92) is within the customer's historical spending range (mean $123.85, max $2568.27).",
+      "Transaction occurred in billing region 264.0, which is the customer's primary transaction region (2552 transactions).",
+      "The card used (card:60af9bd0c1639aa70741a704a3a36a6b) has a long history of use (2788 transactions) and previous transactions with this card have low risk scores.",
+      "The transaction channel was \"in_person,\" which aligns with the customer's historical channel usage.",
+      "No rapid transaction sequence was detected around the flagged transaction.",
+      "No other cards are connected to the card used in the flagged transaction.",
+      "The network risk assessment is \"LOW\" with a risk score of 15."
+    ],
+    "reasoning": "The investigation presents conflicting evidence regarding transaction 3514948. On one hand, several factors strongly suggest the transaction is legitimate: the amount is within the customer's normal spending range, it occurred in their primary billing region, the card has a long and clean history, and the channel aligns with past behavior. Furthermore, no rapid transaction sequence was detected, and the network risk assessment is low despite a \"Large shared-card network\" signal. On the other hand, the high risk score of 0.87 and, more significantly, the appearance of a new device (\"SM-G950U Build/R16NW\") on the same day as the transaction are strong indicators of potential fraud, possibly an account takeover. The \"Large shared-card network\" signal, while assessed as low risk, still adds a layer of suspicion. Without customer validation, it is impossible to definitively determine if the new device usage was authorized or if the high risk score is a false positive. Therefore, the verdict remains uncertain, leaning towards a 50% probability of fraud due to the new device activity.",
+    "confidence": 0.75
+  },
+  "policy": {
+    "actions": [
+      "VERIFY_WITH_CUSTOMER",
+      "CREATE_CASE"
+    ],
+    "primary_action": "VERIFY_WITH_CUSTOMER",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected VERIFY_WITH_CUSTOMER without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30).",
+    "requires_customer_response": true,
+    "evidence_requests": [],
+    "exposure": 111.92,
+    "affected_txn_ids": [
+      "3514948"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

@@ -1,0 +1,222 @@
+{
+  "case_id": "HHG-005",
+  "case": {
+    "status": "completed",
+    "verdict": "legitimate",
+    "fraud_probability": 0.05,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [],
+    "first_suspicious_txn_id": "",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 0.0,
+    "evidence": [
+      "Transaction amount ($100.07) is within the customer's historical spending range (mean $176.02).",
+      "Customer has a history of online transactions.",
+      "Customer has a history of transactions in billing region 330.0.",
+      "No rapid transaction sequence detected.",
+      "The 'Large shared-card network' signal refers to the total transactions on the card, which is not necessarily indicative of fraud.",
+      "The transaction graph risk assessment is low (risk score 15)."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The transaction exhibits several characteristics consistent with legitimate customer activity. The amount ($100.07) falls within the customer's typical spending range (mean $176.02), and the customer has a history of both online transactions and transactions in the specified billing region (330.0). There is no evidence of rapid transaction attempts or card testing. The \"Large shared-card network\" signal was clarified to refer to the total number of transactions on the card, not an indicator of fraud. Furthermore, the transaction graph investigation returned a low risk assessment (risk score 15). The primary concerns are the elevated risk score of 0.54 for this specific transaction and the discrepancy in email domains (customer's icloud.com vs. recipient's gmail.com). While these factors initially raise suspicion, the overall pattern of activity strongly suggests legitimacy. The different email domain could be explained by the customer sending a gift or making a purchase for someone else. Given the strong supporting evidence for legitimacy and the lack of concrete fraud indicators, the transaction is assessed as legitimate.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-005",
+    "customer_id": "C02923",
+    "card_id": "C02923-K1",
+    "flagged_txn_id": "3523199",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3523199 ($100.07, online) at 0.54. Review and decide.",
+    "risk_score": 0.54,
+    "confidence": 0.9,
+    "fraud_type": null,
+    "reasoning": "The transaction exhibits several characteristics consistent with legitimate customer activity. The amount ($100.07) falls within the customer's typical spending range (mean $176.02), and the customer has a history of both online transactions and transactions in the specified billing region (330.0). There is no evidence of rapid transaction attempts or card testing. The \"Large shared-card network\" signal was clarified to refer to the total number of transactions on the card, not an indicator of fraud. Furthermore, the transaction graph investigation returned a low risk assessment (risk score 15). The primary concerns are the elevated risk score of 0.54 for this specific transaction and the discrepancy in email domains (customer's icloud.com vs. recipient's gmail.com). While these factors initially raise suspicion, the overall pattern of activity strongly suggests legitimacy. The different email domain could be explained by the customer sending a gift or making a purchase for someone else. Given the strong supporting evidence for legitimacy and the lack of concrete fraud indicators, the transaction is assessed as legitimate.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3523199",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3523199",
+      "question": "Did you authorize transaction 3523199?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "reason": "Policy requires customer confirmation before closing legitimate case.",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": []
+  },
+  "sar": {
+    "file": false,
+    "reason": "Transaction verified legitimate; no suspicious activity detected.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "Transaction verified legitimate; no suspicious activity detected."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 5 tool call(s) over 5 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 5,
+  "tokens": 0,
+  "latency_s": 31.991,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 31.991,
+  "latency_ms": 31991.0,
+  "latency": {
+    "seconds": 31.991,
+    "ms": 31991.0
+  },
+  "input": {
+    "customer_id": "C02923",
+    "card_id": "C02923-K1",
+    "flagged_txn_id": "3523199",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3523199 ($100.07, online) at 0.54. Review and decide.",
+    "risk_score": 0.54
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history"
+    ],
+    "tool_call_count": 5,
+    "evidence_count": 5,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is legitimate, falling within the customer's historical spending patterns, regions, and online channel usage. The higher risk score might be a false positive due to the different email domains, which could be explained by the customer using a different email for the recipient.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "Transaction amount ($100.07) is within the customer's historical spending range (mean $176.02).",
+          "Customer has a history of online transactions.",
+          "Customer has a history of transactions in billing region 330.0.",
+          "No rapid transaction sequence detected.",
+          "The 'Large shared-card network' signal refers to the total transactions on the card, not necessarily fraudulent activity."
+        ],
+        "contradicting_evidence": [
+          "Risk score of 0.54 is higher than previous transactions.",
+          "Recipient email domain (gmail.com) is different from customer's email domain (icloud.com)."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Online Fraud",
+        "description": "The transaction is fraudulent, potentially due to unauthorized use of the card online. The higher risk score and the discrepancy in email domains could indicate a compromised account or card.",
+        "confidence": 0.3,
+        "supporting_evidence": [
+          "Risk score of 0.54 is higher than previous transactions.",
+          "Recipient email domain (gmail.com) is different from customer's email domain (icloud.com)."
+        ],
+        "contradicting_evidence": [
+          "Transaction amount is within the customer's normal spending range.",
+          "Customer has a history of online transactions and transactions in the same billing region.",
+          "No evidence of rapid transaction attempts or card testing."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3523199",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3523199",
+        "question": "Did you authorize transaction 3523199?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "reason": "Policy requires customer confirmation before closing legitimate case.",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 5
+  },
+  "assessment": {
+    "verdict": "legitimate",
+    "fraud_probability": 0.05,
+    "fraud_type": null,
+    "exposure": 0.0,
+    "affected_txn_ids": [],
+    "supporting_evidence": [
+      "Transaction amount ($100.07) is within the customer's historical spending range (mean $176.02).",
+      "Customer has a history of online transactions.",
+      "Customer has a history of transactions in billing region 330.0.",
+      "No rapid transaction sequence detected.",
+      "The 'Large shared-card network' signal refers to the total transactions on the card, which is not necessarily indicative of fraud.",
+      "The transaction graph risk assessment is low (risk score 15)."
+    ],
+    "contradicting_evidence": [
+      "Risk score of 0.54 is higher than previous transactions.",
+      "Recipient email domain (gmail.com) is different from customer's email domain (icloud.com)."
+    ],
+    "reasoning": "The transaction exhibits several characteristics consistent with legitimate customer activity. The amount ($100.07) falls within the customer's typical spending range (mean $176.02), and the customer has a history of both online transactions and transactions in the specified billing region (330.0). There is no evidence of rapid transaction attempts or card testing. The \"Large shared-card network\" signal was clarified to refer to the total number of transactions on the card, not an indicator of fraud. Furthermore, the transaction graph investigation returned a low risk assessment (risk score 15). The primary concerns are the elevated risk score of 0.54 for this specific transaction and the discrepancy in email domains (customer's icloud.com vs. recipient's gmail.com). While these factors initially raise suspicion, the overall pattern of activity strongly suggests legitimacy. The different email domain could be explained by the customer sending a gift or making a purchase for someone else. Given the strong supporting evidence for legitimacy and the lack of concrete fraud indicators, the transaction is assessed as legitimate.",
+    "confidence": 0.9
+  },
+  "policy": {
+    "actions": [],
+    "primary_action": null,
+    "matched_rules": [],
+    "rationale": "Policy evaluation completed.\n",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3523199",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3523199",
+        "question": "Did you authorize transaction 3523199?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "reason": "Policy requires customer confirmation before closing legitimate case.",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 0.0,
+    "affected_txn_ids": [],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

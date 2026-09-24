@@ -1,0 +1,205 @@
+{
+  "case_id": "HHG-015",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3464869"
+    ],
+    "first_suspicious_txn_id": "3464869",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "Trident/7.0"
+    ],
+    "exposure_usd": 599.94,
+    "evidence": [
+      "Transaction 3464869 has a high risk score of 0.77.",
+      "Transaction 3464869 amount ($599.94) is the maximum ever spent by the customer.",
+      "The \"Large shared-card network\" flag indicates 78 related transactions, which could suggest a compromised card in a broader fraudulent scheme."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The evidence presents a balanced case between legitimate and fraudulent activity, leading to an uncertain verdict. The high risk score (0.77) and the transaction being the customer's maximum historical spend ($599.94) are strong indicators of potential fraud. Additionally, the \"Large shared-card network\" flag, indicating 78 related transactions, raises concerns about possible card compromise within a wider fraudulent network. However, several factors strongly support the legitimacy of the transaction: it occurred through an online channel and in a billing region consistent with the customer's historical behavior. Crucially, the transaction was made from a device (Trident/7.0, Windows 7, ie 11.0 for desktop) that the customer has used previously, reducing the likelihood of unauthorized access. Furthermore, no rapid transaction sequence was observed, which often accompanies fraudulent activity. Without direct customer confirmation, it is impossible to definitively determine whether this transaction is legitimate or fraudulent. The ambiguity of the \"Large shared-card network\" flag further contributes to the uncertainty, as its significance without additional context on the nature of these related transactions is unclear.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-015",
+    "customer_id": "C03042",
+    "card_id": "C03042-K1",
+    "flagged_txn_id": "3464869",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3464869 ($599.94, online) at 0.77. Review and decide.",
+    "risk_score": 0.77,
+    "confidence": 0.6,
+    "fraud_type": "null",
+    "reasoning": "The evidence presents a balanced case between legitimate and fraudulent activity, leading to an uncertain verdict. The high risk score (0.77) and the transaction being the customer's maximum historical spend ($599.94) are strong indicators of potential fraud. Additionally, the \"Large shared-card network\" flag, indicating 78 related transactions, raises concerns about possible card compromise within a wider fraudulent network. However, several factors strongly support the legitimacy of the transaction: it occurred through an online channel and in a billing region consistent with the customer's historical behavior. Crucially, the transaction was made from a device (Trident/7.0, Windows 7, ie 11.0 for desktop) that the customer has used previously, reducing the likelihood of unauthorized access. Furthermore, no rapid transaction sequence was observed, which often accompanies fraudulent activity. Without direct customer confirmation, it is impossible to definitively determine whether this transaction is legitimate or fraudulent. The ambiguity of the \"Large shared-card network\" flag further contributes to the uncertainty, as its significance without additional context on the nature of these related transactions is unclear.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "ESCALATE_TO_ANALYST",
+        "route": "L2",
+        "reason": "Escalate to L2 fraud analyst for manual investigation."
+      },
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require step-up multi-factor authentication for high-risk or unconfirmed transaction."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $599.94 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $599.94 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 5 tool call(s) over 6 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 5,
+  "tokens": 0,
+  "latency_s": 35.764,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 35.764,
+  "latency_ms": 35764.0,
+  "latency": {
+    "seconds": 35.764,
+    "ms": 35764.0
+  },
+  "input": {
+    "customer_id": "C03042",
+    "card_id": "C03042-K1",
+    "flagged_txn_id": "3464869",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3464869 ($599.94, online) at 0.77. Review and decide.",
+    "risk_score": 0.77
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_customer_device_history"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_customer_device_history"
+    ],
+    "tool_call_count": 5,
+    "evidence_count": 5,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction aligns with several aspects of the customer's historical behavior, including the transaction channel, billing region, and the device used. The amount, while high, matches the customer's historical maximum.",
+        "confidence": 0.6,
+        "supporting_evidence": [
+          "Transaction amount ($599.94) matches customer's historical maximum.",
+          "Transaction channel (online) is consistent with customer's historical usage.",
+          "Billing region (327.0) is among the customer's historically used regions.",
+          "Transaction was made from a device previously used by the customer.",
+          "No rapid transaction sequence observed around the flagged transaction."
+        ],
+        "contradicting_evidence": [
+          "High risk score of 0.77.",
+          "Transaction amount is the maximum ever spent by the customer.",
+          "Flag 'Large shared-card network' indicates the card is linked to many transactions, which could be a sign of compromise."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The high risk score and the transaction being the maximum amount ever spent by the customer suggest potential unauthorized activity. The 'Large shared-card network' flag could indicate a compromised card being used in a broader fraudulent scheme.",
+        "confidence": 0.4,
+        "supporting_evidence": [
+          "High risk score of 0.77.",
+          "Transaction amount is the maximum ever spent by the customer.",
+          "Flag 'Large shared-card network' could indicate a compromised card."
+        ],
+        "contradicting_evidence": [
+          "Transaction channel (online) is consistent with customer's historical usage.",
+          "Billing region (327.0) is among the customer's historically used regions.",
+          "Transaction was made from a device previously used by the customer.",
+          "No rapid transaction sequence observed around the flagged transaction."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "null",
+    "exposure": 599.94,
+    "affected_txn_ids": [
+      "3464869"
+    ],
+    "supporting_evidence": [
+      "Transaction 3464869 has a high risk score of 0.77.",
+      "Transaction 3464869 amount ($599.94) is the maximum ever spent by the customer.",
+      "The \"Large shared-card network\" flag indicates 78 related transactions, which could suggest a compromised card in a broader fraudulent scheme."
+    ],
+    "contradicting_evidence": [
+      "Transaction 3464869 was made online, a channel the customer has used historically.",
+      "Transaction 3464869 billing region (327.0) is one of the regions the customer has transacted in before.",
+      "Transaction 3464869 was made from a device previously used by the customer (Trident/7.0, Windows 7, ie 11.0 for desktop).",
+      "No rapid transaction sequence was observed around transaction 3464869."
+    ],
+    "reasoning": "The evidence presents a balanced case between legitimate and fraudulent activity, leading to an uncertain verdict. The high risk score (0.77) and the transaction being the customer's maximum historical spend ($599.94) are strong indicators of potential fraud. Additionally, the \"Large shared-card network\" flag, indicating 78 related transactions, raises concerns about possible card compromise within a wider fraudulent network. However, several factors strongly support the legitimacy of the transaction: it occurred through an online channel and in a billing region consistent with the customer's historical behavior. Crucially, the transaction was made from a device (Trident/7.0, Windows 7, ie 11.0 for desktop) that the customer has used previously, reducing the likelihood of unauthorized access. Furthermore, no rapid transaction sequence was observed, which often accompanies fraudulent activity. Without direct customer confirmation, it is impossible to definitively determine whether this transaction is legitimate or fraudulent. The ambiguity of the \"Large shared-card network\" flag further contributes to the uncertainty, as its significance without additional context on the nature of these related transactions is unclear.",
+    "confidence": 0.6
+  },
+  "policy": {
+    "actions": [
+      "ESCALATE_TO_ANALYST",
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "ESCALATE_TO_ANALYST",
+    "matched_rules": [
+      "R1",
+      "R8",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[R8] Uncertain verdict with exposure ($599.94 > $500). Escalated to analyst.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30).",
+    "requires_customer_response": true,
+    "evidence_requests": [],
+    "exposure": 599.94,
+    "affected_txn_ids": [
+      "3464869"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

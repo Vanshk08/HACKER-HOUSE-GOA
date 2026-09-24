@@ -1,0 +1,267 @@
+{
+  "case_id": "HHG-019",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "Unauthorized card-not-present online transaction.",
+    "affected_txn_ids": [
+      "3503878"
+    ],
+    "first_suspicious_txn_id": "3503878",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 99.92,
+    "evidence": [
+      "Transaction 3503878 has a high risk score of 0.9.",
+      "Customer C07987 has a history of three confirmed fraud cases (CC-2011, CC-2860, CC-5026) involving the same card (C07987-K2) used in the flagged transaction.",
+      "One previous fraud case (CC-2860) was card-not-present fraud for an online purchase, similar to the flagged transaction.",
+      "The \"Large shared-card network\" signal indicates 246 related transactions, which could contribute to the risk profile."
+    ],
+    "similar_prior_cases": [
+      "CC-2011",
+      "CC-2860",
+      "CC-5026"
+    ],
+    "summary": "The transaction 3503878 has a high risk score of 0.9 and is associated with a customer and card that have a history of confirmed fraud, including a previous card-not-present online fraud case (CC-2860) with the same card (C07987-K2). This strongly suggests potential fraud. However, the transaction details (amount, channel, billing region) are consistent with the customer's historical legitimate spending patterns. There is no evidence of rapid transaction sequences or direct connections to other fraudulent cards or devices. The \"Large shared-card network\" signal is not directly indicative of a fraud ring. The critical piece of missing information is the customer's direct response to the validation request. Without this confirmation, it is impossible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the verdict is uncertain, with an equal probability assigned to both fraud and legitimate activity.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-019",
+    "customer_id": "C07987",
+    "card_id": "C07987-K2",
+    "flagged_txn_id": "3503878",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3503878 ($99.92, online) at 0.90. Review and decide.",
+    "risk_score": 0.9,
+    "confidence": 0.6,
+    "fraud_type": "card_not_present_fraud",
+    "reasoning": "The transaction 3503878 has a high risk score of 0.9 and is associated with a customer and card that have a history of confirmed fraud, including a previous card-not-present online fraud case (CC-2860) with the same card (C07987-K2). This strongly suggests potential fraud. However, the transaction details (amount, channel, billing region) are consistent with the customer's historical legitimate spending patterns. There is no evidence of rapid transaction sequences or direct connections to other fraudulent cards or devices. The \"Large shared-card network\" signal is not directly indicative of a fraud ring. The critical piece of missing information is the customer's direct response to the validation request. Without this confirmation, it is impossible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the verdict is uncertain, with an equal probability assigned to both fraud and legitimate activity.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3503878",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3503878",
+      "question": "Did you authorize this transaction of $99.92 on your card C07987-K2?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require step-up multi-factor authentication for high-risk or unconfirmed transaction."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $99.92 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $99.92 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 13 tool call(s) over 5 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 13,
+  "tokens": 0,
+  "latency_s": 39.632,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 39.632,
+  "latency_ms": 39632.0,
+  "latency": {
+    "seconds": 39.632,
+    "ms": 39632.0
+  },
+  "input": {
+    "customer_id": "C07987",
+    "card_id": "C07987-K2",
+    "flagged_txn_id": "3503878",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3503878 ($99.92, online) at 0.90. Review and decide.",
+    "risk_score": 0.9
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "investigate_transaction_graph",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "get_card_history",
+      "get_connected_cards",
+      "get_device_connections",
+      "find_shared_origins",
+      "find_shared_origins",
+      "find_related_fraud",
+      "find_related_fraud",
+      "find_related_fraud",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "investigate_transaction_graph",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "get_card_history",
+      "get_connected_cards",
+      "get_device_connections",
+      "find_shared_origins",
+      "find_shared_origins",
+      "find_related_fraud",
+      "find_related_fraud",
+      "find_related_fraud",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 13,
+    "evidence_count": 13,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is a legitimate purchase made by the customer. The amount, channel, and billing region are consistent with the customer's historical spending patterns. The high risk score might be a false positive, and previous fraud cases are not directly indicative of fraud in this instance.",
+        "confidence": 0.2,
+        "supporting_evidence": [
+          "Transaction amount ($99.92) is within the customer's historical spending range ($19.97 - $1586.94).",
+          "Transaction channel (online) is consistent with customer's historical channel usage.",
+          "Billing region (264.0) is one of the customer's historically used regions.",
+          "No rapid transaction sequence detected around the flagged transaction.",
+          "No direct connections to other fraudulent cards or devices were found for the card used."
+        ],
+        "contradicting_evidence": [
+          "High risk score of 0.9 for the flagged transaction.",
+          "Customer C07987 has a history of three confirmed fraud cases, all involving the same card (C07987-K2) used in the flagged transaction.",
+          "One previous fraud case (CC-2860) was card-not-present fraud for an online purchase, similar to the flagged transaction."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The transaction is fraudulent, likely due to a compromised card, consistent with the customer's history of confirmed fraud on the same card. The high risk score accurately reflects the fraudulent nature of the transaction.",
+        "confidence": 0.8,
+        "supporting_evidence": [
+          "High risk score of 0.9 for the flagged transaction.",
+          "Customer C07987 has a history of three confirmed fraud cases (CC-2011, CC-2860, CC-5026), all involving the same card (C07987-K2) used in the flagged transaction.",
+          "One previous fraud case (CC-2860) was card-not-present fraud for an online purchase, which is the same type of transaction as the flagged one.",
+          "The 'Large shared-card network' signal, while not directly indicative of a fraud ring, could be a contributing factor to the overall risk profile given the customer's fraud history."
+        ],
+        "contradicting_evidence": [
+          "Transaction amount ($99.92) is within the customer's historical spending range.",
+          "Transaction channel (online) is consistent with customer's historical channel usage.",
+          "Billing region (264.0) is one of the customer's historically used regions.",
+          "No rapid transaction sequence detected around the flagged transaction.",
+          "No direct connections to other fraudulent cards or devices were found for the card used."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3503878",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3503878",
+        "question": "Did you authorize this transaction of $99.92 on your card C07987-K2?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 5
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "card_not_present_fraud",
+    "exposure": 99.92,
+    "affected_txn_ids": [
+      "3503878"
+    ],
+    "supporting_evidence": [
+      "Transaction 3503878 has a high risk score of 0.9.",
+      "Customer C07987 has a history of three confirmed fraud cases (CC-2011, CC-2860, CC-5026) involving the same card (C07987-K2) used in the flagged transaction.",
+      "One previous fraud case (CC-2860) was card-not-present fraud for an online purchase, similar to the flagged transaction.",
+      "The \"Large shared-card network\" signal indicates 246 related transactions, which could contribute to the risk profile."
+    ],
+    "contradicting_evidence": [
+      "Transaction amount ($99.92) is within the customer's historical spending range ($19.97 - $1586.94).",
+      "Transaction channel (online) is consistent with customer's historical channel usage.",
+      "Billing region (264.0) is one of the customer's historically used regions.",
+      "No rapid transaction sequence detected around the flagged transaction.",
+      "No direct connections to other fraudulent cards or devices were found for the card used.",
+      "The \"Large shared-card network\" signal is attributed to common email domains and billing regions, not a direct fraud ring."
+    ],
+    "reasoning": "The transaction 3503878 has a high risk score of 0.9 and is associated with a customer and card that have a history of confirmed fraud, including a previous card-not-present online fraud case (CC-2860) with the same card (C07987-K2). This strongly suggests potential fraud. However, the transaction details (amount, channel, billing region) are consistent with the customer's historical legitimate spending patterns. There is no evidence of rapid transaction sequences or direct connections to other fraudulent cards or devices. The \"Large shared-card network\" signal is not directly indicative of a fraud ring. The critical piece of missing information is the customer's direct response to the validation request. Without this confirmation, it is impossible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the verdict is uncertain, with an equal probability assigned to both fraud and legitimate activity.",
+    "confidence": 0.6
+  },
+  "policy": {
+    "actions": [
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "STEP_UP_AUTH",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30), external evidence requested (1 pending request(s)).",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3503878",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3503878",
+        "question": "Did you authorize this transaction of $99.92 on your card C07987-K2?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 99.92,
+    "affected_txn_ids": [
+      "3503878"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

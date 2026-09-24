@@ -1,0 +1,193 @@
+{
+  "case_id": "HHG-006",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.75,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "Unauthorized card-not-present online transaction.",
+    "affected_txn_ids": [
+      "3476682"
+    ],
+    "first_suspicious_txn_id": "3476682",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 482.12,
+    "evidence": [
+      "Customer C07297 explicitly reported not making the $482.12 purchase (transaction ID 3476682).",
+      "The transaction graph indicated a 'Large shared-card network' fraud signal with 162 related transactions.",
+      "The customer's response status is 'unknown', meaning a formal denial has not been obtained, but the customer's report is a strong indicator of unauthorized activity."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The primary evidence supporting fraud is the customer's explicit report that they did not make the purchase. While the customer_response_status is 'unknown' (meaning a formal denial has not been obtained), the customer's direct communication is a strong initial indicator of unauthorized activity. Additionally, the 'Large shared-card network' fraud signal, although ambiguous in its specific implications, suggests a potential connection to broader fraudulent patterns. However, there is significant contradicting evidence. The transaction amount and billing region are consistent with the customer's historical spending patterns, and the customer has a history of online transactions. The transaction's original risk score was low (0.25). Furthermore, no rapid transaction sequence was detected, and no direct card connections or related fraud cases were found for this card or customer. The 'Large shared-card network' signal's ambiguity, coupled with the lack of other concrete fraud indicators (like rapid transactions or direct card connections), prevents a 'confirmed_fraud' verdict. However, the customer's direct report of non-recognition is a critical piece of evidence that cannot be dismissed, leading to a 'suspected_fraud' verdict. The exposure is based on the single reported fraudulent transaction.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-006",
+    "customer_id": "C07297",
+    "card_id": "C07297-K1",
+    "flagged_txn_id": "3476682",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C07297 message: 'I never made this $482.12 purchase. Please check my card.' Refers to 3476682.",
+    "risk_score": null,
+    "confidence": 0.85,
+    "fraud_type": "card_not_present",
+    "reasoning": "The primary evidence supporting fraud is the customer's explicit report that they did not make the purchase. While the customer_response_status is 'unknown' (meaning a formal denial has not been obtained), the customer's direct communication is a strong initial indicator of unauthorized activity. Additionally, the 'Large shared-card network' fraud signal, although ambiguous in its specific implications, suggests a potential connection to broader fraudulent patterns. However, there is significant contradicting evidence. The transaction amount and billing region are consistent with the customer's historical spending patterns, and the customer has a history of online transactions. The transaction's original risk score was low (0.25). Furthermore, no rapid transaction sequence was detected, and no direct card connections or related fraud cases were found for this card or customer. The 'Large shared-card network' signal's ambiguity, coupled with the lack of other concrete fraud indicators (like rapid transactions or direct card connections), prevents a 'confirmed_fraud' verdict. However, the customer's direct report of non-recognition is a critical piece of evidence that cannot be dismissed, leading to a 'suspected_fraud' verdict. The exposure is based on the single reported fraudulent transaction.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.75 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $482.12 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $482.12 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 7 tool call(s) over 8 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 7,
+  "tokens": 0,
+  "latency_s": 38.74,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 38.74,
+  "latency_ms": 38740.0,
+  "latency": {
+    "seconds": 38.74,
+    "ms": 38740.0
+  },
+  "input": {
+    "customer_id": "C07297",
+    "card_id": "C07297-K1",
+    "flagged_txn_id": "3476682",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C07297 message: 'I never made this $482.12 purchase. Please check my card.' Refers to 3476682.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history",
+      "get_connected_cards",
+      "find_related_fraud"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history",
+      "get_connected_cards",
+      "find_related_fraud"
+    ],
+    "tool_call_count": 7,
+    "evidence_count": 7,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction falls within the customer's historical spending patterns in terms of amount and billing region. The customer has a history of online transactions. The risk score for this transaction is low (0.25).",
+        "confidence": 0.3,
+        "supporting_evidence": [
+          "Transaction amount ($482.12) is within customer's historical range ($20.94 - $1104).",
+          "Billing region (264.0) is among the customer's historical regions.",
+          "Customer has a history of online transactions.",
+          "Transaction risk score is 0.25 (low)."
+        ],
+        "contradicting_evidence": [
+          "Customer explicitly reported not making the purchase.",
+          "Transaction graph indicated a 'Large shared-card network' fraud signal."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The customer explicitly stated they did not make the purchase, indicating a potential compromise of their card credentials. The 'Large shared-card network' signal, while not fully understood, could point to a broader fraud scheme.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "Customer explicitly reported not making the purchase.",
+          "Transaction graph indicated a 'Large shared-card network' fraud signal."
+        ],
+        "contradicting_evidence": [
+          "Transaction amount and region are within the customer's historical patterns.",
+          "No rapid transaction sequence detected.",
+          "No direct card connections found via `get_connected_cards`.",
+          "No related fraud cases found for this card or customer."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 8
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.75,
+    "fraud_type": "card_not_present",
+    "exposure": 482.12,
+    "affected_txn_ids": [
+      "3476682"
+    ],
+    "supporting_evidence": [
+      "Customer C07297 explicitly reported not making the $482.12 purchase (transaction ID 3476682).",
+      "The transaction graph indicated a 'Large shared-card network' fraud signal with 162 related transactions.",
+      "The customer's response status is 'unknown', meaning a formal denial has not been obtained, but the customer's report is a strong indicator of unauthorized activity."
+    ],
+    "contradicting_evidence": [
+      "Transaction amount ($482.12) is within the customer's historical spending range ($20.94 - $1104).",
+      "Billing region (264.0) is among the customer's historical regions.",
+      "The customer has a history of online transactions.",
+      "The transaction risk score is low (0.25).",
+      "No rapid transaction sequence was detected for the target transaction.",
+      "No direct card connections were found via `get_connected_cards` for card:7befa86c21340760550515f6596b9e19.",
+      "No related fraud cases were found for this card or customer."
+    ],
+    "reasoning": "The primary evidence supporting fraud is the customer's explicit report that they did not make the purchase. While the customer_response_status is 'unknown' (meaning a formal denial has not been obtained), the customer's direct communication is a strong initial indicator of unauthorized activity. Additionally, the 'Large shared-card network' fraud signal, although ambiguous in its specific implications, suggests a potential connection to broader fraudulent patterns. However, there is significant contradicting evidence. The transaction amount and billing region are consistent with the customer's historical spending patterns, and the customer has a history of online transactions. The transaction's original risk score was low (0.25). Furthermore, no rapid transaction sequence was detected, and no direct card connections or related fraud cases were found for this card or customer. The 'Large shared-card network' signal's ambiguity, coupled with the lack of other concrete fraud indicators (like rapid transactions or direct card connections), prevents a 'confirmed_fraud' verdict. However, the customer's direct report of non-recognition is a critical piece of evidence that cannot be dismissed, leading to a 'suspected_fraud' verdict. The exposure is based on the single reported fraudulent transaction.",
+    "confidence": 0.85
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.75 >= 0.30), customer disputed transaction.",
+    "requires_customer_response": false,
+    "evidence_requests": [],
+    "exposure": 482.12,
+    "affected_txn_ids": [
+      "3476682"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

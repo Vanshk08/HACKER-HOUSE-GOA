@@ -1,0 +1,262 @@
+{
+  "case_id": "HHG-010",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3506725"
+    ],
+    "first_suspicious_txn_id": "3506725",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 1000.03,
+    "evidence": [
+      "The transaction has a high risk score of 0.9.",
+      "The transaction amount of $1000.03 is significantly higher than the customer's average transaction amount of $153.87.",
+      "There are 955 similar closed cases with a \"confirmed_fraud\" verdict and \"out_of_region_use\" pattern in region 469.0.",
+      "The `get_region_activity` tool initially returned 0 transactions for customer C10434 in region 469.0, creating a discrepancy with `get_customer_regions` which shows 27 transactions in that region."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The case presents conflicting evidence, leading to an uncertain verdict. The high risk score (0.9) and the unusually large transaction amount ($1000.03) compared to the customer's average spending ($153.87) strongly suggest potential fraud. The existence of 955 similar closed cases with a \"confirmed_fraud\" verdict related to \"out_of_region_use\" in the same region (469.0) further supports the fraud hypothesis, despite the current transaction being online. Additionally, the discrepancy between `get_region_activity` (showing 0 transactions) and `get_customer_regions` (showing 27 transactions) for region 469.0 introduces an anomaly that could be indicative of fraudulent activity or a system issue. However, the customer does have a history of transactions in region 469.0, which contradicts the \"out-of-region\" aspect of the similar fraud cases. Furthermore, no connected cards were found, and no rapid transaction sequence was detected, which might be expected in some fraud schemes. The most crucial piece of missing evidence is the customer's response to the validation request. Without their confirmation or denial, it is impossible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the current evidence is insufficient to confirm or deny fraud, resulting in an \"uncertain\" verdict.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-010",
+    "customer_id": "C10434",
+    "card_id": "C10434-K1",
+    "flagged_txn_id": "3506725",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3506725 ($1,000.03, online) at 0.90. Review and decide.",
+    "risk_score": 0.9,
+    "confidence": 0.6,
+    "fraud_type": "null",
+    "reasoning": "The case presents conflicting evidence, leading to an uncertain verdict. The high risk score (0.9) and the unusually large transaction amount ($1000.03) compared to the customer's average spending ($153.87) strongly suggest potential fraud. The existence of 955 similar closed cases with a \"confirmed_fraud\" verdict related to \"out_of_region_use\" in the same region (469.0) further supports the fraud hypothesis, despite the current transaction being online. Additionally, the discrepancy between `get_region_activity` (showing 0 transactions) and `get_customer_regions` (showing 27 transactions) for region 469.0 introduces an anomaly that could be indicative of fraudulent activity or a system issue. However, the customer does have a history of transactions in region 469.0, which contradicts the \"out-of-region\" aspect of the similar fraud cases. Furthermore, no connected cards were found, and no rapid transaction sequence was detected, which might be expected in some fraud schemes. The most crucial piece of missing evidence is the customer's response to the validation request. Without their confirmation or denial, it is impossible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the current evidence is insufficient to confirm or deny fraud, resulting in an \"uncertain\" verdict.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3506725",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3506725",
+      "question": "Did you authorize this transaction of $1000.03 in region 469.0?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "ESCALATE_TO_ANALYST",
+        "route": "L2",
+        "reason": "Escalate to L2 fraud analyst for manual investigation."
+      },
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require step-up multi-factor authentication for high-risk or unconfirmed transaction."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $1000.03 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $1000.03 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 12 tool call(s) over 7 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 12,
+  "tokens": 0,
+  "latency_s": 39.235,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 39.235,
+  "latency_ms": 39235.0,
+  "latency": {
+    "seconds": 39.235,
+    "ms": 39235.0
+  },
+  "input": {
+    "customer_id": "C10434",
+    "card_id": "C10434-K1",
+    "flagged_txn_id": "3506725",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3506725 ($1,000.03, online) at 0.90. Review and decide.",
+    "risk_score": 0.9
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "investigate_transaction_graph",
+      "get_customer_history",
+      "get_card_history",
+      "get_transaction_sequence",
+      "get_region_activity",
+      "get_region_activity",
+      "get_connected_cards",
+      "get_similar_closed_cases",
+      "get_similar_closed_cases",
+      "get_customer_regions",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "investigate_transaction_graph",
+      "get_customer_history",
+      "get_card_history",
+      "get_transaction_sequence",
+      "get_region_activity",
+      "get_region_activity",
+      "get_connected_cards",
+      "get_similar_closed_cases",
+      "get_similar_closed_cases",
+      "get_customer_regions",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 12,
+    "evidence_count": 12,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The customer made a legitimate, albeit unusually large, online purchase in a region they have previously transacted in. The high risk score might be a false positive due to the transaction amount exceeding their typical spending patterns.",
+        "confidence": 0.5,
+        "supporting_evidence": [
+          "Customer C10434 has a history of transactions in region 469.0 (27 transactions confirmed by get_customer_regions).",
+          "No connected cards were found, suggesting this is not part of a larger coordinated fraud scheme involving multiple cards.",
+          "No rapid transaction sequence was detected around the flagged transaction."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount of $1000.03 is significantly higher than the customer's average transaction amount of $153.87.",
+          "The transaction received a high risk score of 0.9.",
+          "The `get_region_activity` tool initially returned 0 transactions for customer C10434 in region 469.0, creating a discrepancy with `get_customer_regions`."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "This transaction is fraudulent, potentially an unauthorized online purchase. The high transaction amount and risk score are indicative of fraud, possibly exploiting the customer's prior activity in region 469.0 to appear less suspicious.",
+        "confidence": 0.5,
+        "supporting_evidence": [
+          "The transaction has a high risk score of 0.9.",
+          "The transaction amount of $1000.03 is significantly higher than the customer's average transaction amount.",
+          "There are 955 similar closed cases with a 'confirmed_fraud' verdict and 'out_of_region_use' pattern in region 469.0, indicating a known fraud vector in this region, even if the transaction type differs.",
+          "The discrepancy in `get_region_activity` results could indicate an anomaly or a system issue that might be exploited by fraudsters."
+        ],
+        "contradicting_evidence": [
+          "Customer C10434 has a history of transactions in region 469.0.",
+          "No connected cards were found, which might be expected in some fraud schemes.",
+          "No rapid transaction sequence was detected."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3506725",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3506725",
+        "question": "Did you authorize this transaction of $1000.03 in region 469.0?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 7
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "null",
+    "exposure": 1000.03,
+    "affected_txn_ids": [
+      "3506725"
+    ],
+    "supporting_evidence": [
+      "The transaction has a high risk score of 0.9.",
+      "The transaction amount of $1000.03 is significantly higher than the customer's average transaction amount of $153.87.",
+      "There are 955 similar closed cases with a \"confirmed_fraud\" verdict and \"out_of_region_use\" pattern in region 469.0.",
+      "The `get_region_activity` tool initially returned 0 transactions for customer C10434 in region 469.0, creating a discrepancy with `get_customer_regions` which shows 27 transactions in that region."
+    ],
+    "contradicting_evidence": [
+      "Customer C10434 has a history of 27 transactions in region 469.0.",
+      "No connected cards were found.",
+      "No rapid transaction sequence was detected around the flagged transaction.",
+      "The customer has not yet responded to the validation request."
+    ],
+    "reasoning": "The case presents conflicting evidence, leading to an uncertain verdict. The high risk score (0.9) and the unusually large transaction amount ($1000.03) compared to the customer's average spending ($153.87) strongly suggest potential fraud. The existence of 955 similar closed cases with a \"confirmed_fraud\" verdict related to \"out_of_region_use\" in the same region (469.0) further supports the fraud hypothesis, despite the current transaction being online. Additionally, the discrepancy between `get_region_activity` (showing 0 transactions) and `get_customer_regions` (showing 27 transactions) for region 469.0 introduces an anomaly that could be indicative of fraudulent activity or a system issue. However, the customer does have a history of transactions in region 469.0, which contradicts the \"out-of-region\" aspect of the similar fraud cases. Furthermore, no connected cards were found, and no rapid transaction sequence was detected, which might be expected in some fraud schemes. The most crucial piece of missing evidence is the customer's response to the validation request. Without their confirmation or denial, it is impossible to definitively determine if the transaction is legitimate or fraudulent. Therefore, the current evidence is insufficient to confirm or deny fraud, resulting in an \"uncertain\" verdict.",
+    "confidence": 0.6
+  },
+  "policy": {
+    "actions": [
+      "ESCALATE_TO_ANALYST",
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "ESCALATE_TO_ANALYST",
+    "matched_rules": [
+      "R1",
+      "R8",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[R8] Uncertain verdict with exposure ($1000.03 > $500). Escalated to analyst.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30), external evidence requested (1 pending request(s)).",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3506725",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3506725",
+        "question": "Did you authorize this transaction of $1000.03 in region 469.0?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 1000.03,
+    "affected_txn_ids": [
+      "3506725"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

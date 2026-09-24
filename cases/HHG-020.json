@@ -1,0 +1,197 @@
+{
+  "case_id": "HHG-020",
+  "case": {
+    "status": "completed",
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.7,
+    "pattern": "account_takeover",
+    "pattern_description": "Account compromise involving unfamiliar device and anomalous access patterns.",
+    "affected_txn_ids": [
+      "3509359"
+    ],
+    "first_suspicious_txn_id": "3509359",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "Trident/7.0"
+    ],
+    "exposure_usd": 125.08,
+    "evidence": [
+      "The transaction was made using a new device ('Trident/7.0') that was first seen at the time of this transaction.",
+      "The device ('Trident/7.0') is shared across 11 other customer accounts and 20 other transactions, indicating a potential fraud ring or compromised device.",
+      "The risk score for the transaction (0.52) is higher than most of the customer's recent transactions."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The primary indicator of suspected fraud is the use of a new device ('Trident/7.0') for this transaction, which has never been used by customer C12265 before. Furthermore, this device is associated with 11 other customer accounts and 20 other transactions, strongly suggesting a shared compromised device or a fraud ring. While the transaction amount, channel, and billing region are consistent with the customer's historical behavior, the device anomaly is a significant red flag. The absence of immediate preceding or succeeding transactions does not rule out fraud, as account takeover can involve single, targeted transactions. The risk score of 0.52, while not a definitive verdict, further supports the suspicion of fraud. Given the strong evidence of a shared, new device, the likelihood of account takeover or credential compromise is high, despite some behavioral consistencies.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-020",
+    "customer_id": "C12265",
+    "card_id": "C12265-K2",
+    "flagged_txn_id": "3509359",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3509359 ($125.08, online) at 0.52. Review and decide.",
+    "risk_score": 0.52,
+    "confidence": 0.85,
+    "fraud_type": "account_takeover",
+    "reasoning": "The primary indicator of suspected fraud is the use of a new device ('Trident/7.0') for this transaction, which has never been used by customer C12265 before. Furthermore, this device is associated with 11 other customer accounts and 20 other transactions, strongly suggesting a shared compromised device or a fraud ring. While the transaction amount, channel, and billing region are consistent with the customer's historical behavior, the device anomaly is a significant red flag. The absence of immediate preceding or succeeding transactions does not rule out fraud, as account takeover can involve single, targeted transactions. The risk score of 0.52, while not a definitive verdict, further supports the suspicion of fraud. Given the strong evidence of a shared, new device, the likelihood of account takeover or credential compromise is high, despite some behavioral consistencies.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.70 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $125.08 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $125.08 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 10 tool call(s) over 5 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 10,
+  "tokens": 0,
+  "latency_s": 39.779,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 39.779,
+  "latency_ms": 39779.0,
+  "latency": {
+    "seconds": 39.779,
+    "ms": 39779.0
+  },
+  "input": {
+    "customer_id": "C12265",
+    "card_id": "C12265-K2",
+    "flagged_txn_id": "3509359",
+    "trigger_type": "risk_score",
+    "trigger_text": "Real-time model scored transaction 3509359 ($125.08, online) at 0.52. Review and decide.",
+    "risk_score": 0.52
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history",
+      "get_connected_cards",
+      "get_customer_regions",
+      "get_customer_device_history",
+      "get_device_connections",
+      "get_similar_closed_cases"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "get_card_history",
+      "get_connected_cards",
+      "get_customer_regions",
+      "get_customer_device_history",
+      "get_device_connections",
+      "get_similar_closed_cases"
+    ],
+    "tool_call_count": 10,
+    "evidence_count": 10,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is within the customer's historical spending range and in their usual billing region. The customer has previously made online purchases. The lack of immediate preceding or succeeding transactions suggests it's not part of a rapid velocity attack.",
+        "confidence": 0.3,
+        "supporting_evidence": [
+          "Transaction amount ($125.08) is within customer's historical spending range (mean $193.01, min $15.92, max $1960.95).",
+          "Transaction channel is 'online', which is a historical channel for the customer.",
+          "Transaction billing region ('264.0') is a historical region for the customer.",
+          "No previous or subsequent transactions within 60 minutes of the flagged transaction."
+        ],
+        "contradicting_evidence": [
+          "The transaction was made using a new device ('Trident/7.0') that was first seen at the time of this transaction.",
+          "The device ('Trident/7.0') is shared across 11 other customer accounts and 20 other transactions."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud (Account Takeover/Credential Compromise)",
+        "description": "The transaction was made using a device new to the customer, which is also associated with multiple other customer accounts. This suggests a compromised account or credentials being used by a fraudster operating across multiple accounts with the same device.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "The transaction was made using a new device ('Trident/7.0') that was first seen at the time of this transaction.",
+          "The device ('Trident/7.0') is shared across 11 other customer accounts and 20 other transactions, indicating a potential fraud ring or compromised device.",
+          "The risk score for the transaction (0.52) is higher than most of the customer's recent transactions."
+        ],
+        "contradicting_evidence": [
+          "The transaction amount is within the customer's historical spending range.",
+          "The transaction channel and billing region are consistent with the customer's historical behavior."
+        ]
+      }
+    ],
+    "evidence_requests": [],
+    "iteration_count": 5
+  },
+  "assessment": {
+    "verdict": "suspected_fraud",
+    "fraud_probability": 0.7,
+    "fraud_type": "account_takeover",
+    "exposure": 125.08,
+    "affected_txn_ids": [
+      "3509359"
+    ],
+    "supporting_evidence": [
+      "The transaction was made using a new device ('Trident/7.0') that was first seen at the time of this transaction.",
+      "The device ('Trident/7.0') is shared across 11 other customer accounts and 20 other transactions, indicating a potential fraud ring or compromised device.",
+      "The risk score for the transaction (0.52) is higher than most of the customer's recent transactions."
+    ],
+    "contradicting_evidence": [
+      "The transaction amount ($125.08) is within customer's historical spending range (mean $193.01, min $15.92, max $1960.95).",
+      "Transaction channel is 'online', which is a historical channel for the customer.",
+      "Transaction billing region ('264.0') is a historical region for the customer.",
+      "No previous or subsequent transactions within 60 minutes of the flagged transaction."
+    ],
+    "reasoning": "The primary indicator of suspected fraud is the use of a new device ('Trident/7.0') for this transaction, which has never been used by customer C12265 before. Furthermore, this device is associated with 11 other customer accounts and 20 other transactions, strongly suggesting a shared compromised device or a fraud ring. While the transaction amount, channel, and billing region are consistent with the customer's historical behavior, the device anomaly is a significant red flag. The absence of immediate preceding or succeeding transactions does not rule out fraud, as account takeover can involve single, targeted transactions. The risk score of 0.52, while not a definitive verdict, further supports the suspicion of fraud. Given the strong evidence of a shared, new device, the likelihood of account takeover or credential compromise is high, despite some behavioral consistencies.",
+    "confidence": 0.85
+  },
+  "policy": {
+    "actions": [
+      "CREATE_CASE"
+    ],
+    "primary_action": "CREATE_CASE",
+    "matched_rules": [
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.70 >= 0.30).",
+    "requires_customer_response": false,
+    "evidence_requests": [],
+    "exposure": 125.08,
+    "affected_txn_ids": [
+      "3509359"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

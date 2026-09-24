@@ -1,0 +1,252 @@
+{
+  "case_id": "HHG-009",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3581141"
+    ],
+    "first_suspicious_txn_id": "3581141",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 30.02,
+    "evidence": [
+      "Customer C08299 explicitly reported not making this purchase.",
+      "The 'investigate_transaction_graph' tool identified a 'Large shared-card network: 55 related transactions' which could indicate a coordinated fraud attempt."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The customer's explicit report of not making the purchase strongly suggests fraud. However, the investigation also revealed several factors that contradict this, such as the transaction amount being within the customer's normal spending range, the transaction occurring in a known region, a low risk score, and no rapid transaction sequence. The 'Large shared-card network' is a weak signal without further context. Crucially, the customer's formal response to the validation request is still pending. Without a confirmed denial from the cardholder, it is difficult to definitively conclude fraud, despite the initial customer report. Therefore, the verdict is uncertain.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-009",
+    "customer_id": "C08299",
+    "card_id": "C08299-K1",
+    "flagged_txn_id": "3581141",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C08299 message: 'I never made this $30.02 purchase. Please check my card.' Refers to 3581141.",
+    "risk_score": null,
+    "confidence": 0.7,
+    "fraud_type": "unauthorized_transaction",
+    "reasoning": "The customer's explicit report of not making the purchase strongly suggests fraud. However, the investigation also revealed several factors that contradict this, such as the transaction amount being within the customer's normal spending range, the transaction occurring in a known region, a low risk score, and no rapid transaction sequence. The 'Large shared-card network' is a weak signal without further context. Crucially, the customer's formal response to the validation request is still pending. Without a confirmed denial from the cardholder, it is difficult to definitively conclude fraud, despite the initial customer report. Therefore, the verdict is uncertain.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3581141",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3581141",
+      "question": "Did you authorize this $30.02 purchase on 2016-12-28 12:10:53?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require step-up multi-factor authentication for high-risk or unconfirmed transaction."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $30.02 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $30.02 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 10 tool call(s) over 5 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 10,
+  "tokens": 0,
+  "latency_s": 30.854,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 30.854,
+  "latency_ms": 30854.0,
+  "latency": {
+    "seconds": 30.854,
+    "ms": 30854.0
+  },
+  "input": {
+    "customer_id": "C08299",
+    "card_id": "C08299-K1",
+    "flagged_txn_id": "3581141",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C08299 message: 'I never made this $30.02 purchase. Please check my card.' Refers to 3581141.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "investigate_transaction_graph",
+      "get_region_activity",
+      "get_transaction_sequence",
+      "get_customer_regions",
+      "request_customer_validation",
+      "get_connected_cards",
+      "get_device_connections"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_card_history",
+      "investigate_transaction_graph",
+      "get_region_activity",
+      "get_transaction_sequence",
+      "get_customer_regions",
+      "request_customer_validation",
+      "get_connected_cards",
+      "get_device_connections"
+    ],
+    "tool_call_count": 10,
+    "evidence_count": 10,
+    "hypotheses": [
+      {
+        "id": "hyp_1_legitimate",
+        "title": "Legitimate Customer Activity",
+        "description": "The transaction is a legitimate purchase made by the customer. The amount is within the customer's normal spending range, and the region is one where the customer has transacted before. The risk score is low, and there are no rapid transaction sequences or connected cards indicating fraud.",
+        "confidence": 0.2,
+        "supporting_evidence": [
+          "Transaction amount ($30.02) is within customer's historical spending range (mean $61.17, min $4.98, max $343.94).",
+          "Transaction occurred in region '203.0', which is one of the 7 regions the customer has historically transacted in.",
+          "Risk score for the transaction is low (0.28).",
+          "No rapid transaction sequence detected around the flagged transaction.",
+          "No other cards are connected to C08299-K1.",
+          "Customer C08299 is associated with multiple devices, and the flagged transaction is among the associated transactions, with no indication of device sharing across multiple accounts."
+        ],
+        "contradicting_evidence": [
+          "Customer C08299 explicitly reported not making this purchase.",
+          "The 'investigate_transaction_graph' tool identified a 'Large shared-card network: 55 related transactions', which could be a weak indicator of coordinated activity, although the risk score is low."
+        ]
+      },
+      {
+        "id": "hyp_2_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The transaction is fraudulent, as reported by the customer. Despite some indicators of legitimate activity (normal amount, known region, low risk score), the customer's explicit denial is strong evidence of unauthorized use. The 'Large shared-card network' could be a subtle indicator of a broader fraud scheme.",
+        "confidence": 0.8,
+        "supporting_evidence": [
+          "Customer C08299 explicitly reported not making this purchase.",
+          "The 'investigate_transaction_graph' tool identified a 'Large shared-card network: 55 related transactions', which could indicate a coordinated fraud attempt, even with a low individual transaction risk score."
+        ],
+        "contradicting_evidence": [
+          "Transaction amount ($30.02) is within customer's historical spending range (mean $61.17, min $4.98, max $343.94).",
+          "Transaction occurred in region '203.0', which is one of the 7 regions the customer has historically transacted in.",
+          "Risk score for the transaction is low (0.28).",
+          "No rapid transaction sequence detected around the flagged transaction.",
+          "No other cards are connected to C08299-K1.",
+          "Customer C08299 is associated with multiple devices, and the flagged transaction is among the associated transactions, with no indication of device sharing across multiple accounts."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3581141",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3581141",
+        "question": "Did you authorize this $30.02 purchase on 2016-12-28 12:10:53?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 5
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "unauthorized_transaction",
+    "exposure": 30.02,
+    "affected_txn_ids": [
+      "3581141"
+    ],
+    "supporting_evidence": [
+      "Customer C08299 explicitly reported not making this purchase.",
+      "The 'investigate_transaction_graph' tool identified a 'Large shared-card network: 55 related transactions' which could indicate a coordinated fraud attempt."
+    ],
+    "contradicting_evidence": [
+      "Transaction amount ($30.02) is within customer's historical spending range (mean $61.17, min $4.98, max $343.94).",
+      "Transaction occurred in region '203.0', which is one of the 7 regions the customer has historically transacted in.",
+      "Risk score for the transaction is low (0.28).",
+      "No rapid transaction sequence detected around the flagged transaction.",
+      "No other cards are connected to C08299-K1.",
+      "Customer C08299 is associated with multiple devices, and the flagged transaction is among the associated transactions, with no indication of device sharing across multiple accounts."
+    ],
+    "reasoning": "The customer's explicit report of not making the purchase strongly suggests fraud. However, the investigation also revealed several factors that contradict this, such as the transaction amount being within the customer's normal spending range, the transaction occurring in a known region, a low risk score, and no rapid transaction sequence. The 'Large shared-card network' is a weak signal without further context. Crucially, the customer's formal response to the validation request is still pending. Without a confirmed denial from the cardholder, it is difficult to definitively conclude fraud, despite the initial customer report. Therefore, the verdict is uncertain.",
+    "confidence": 0.7
+  },
+  "policy": {
+    "actions": [
+      "STEP_UP_AUTH",
+      "CREATE_CASE"
+    ],
+    "primary_action": "STEP_UP_AUTH",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected STEP_UP_AUTH without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30), external evidence requested (1 pending request(s)), customer disputed transaction.",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3581141",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3581141",
+        "question": "Did you authorize this $30.02 purchase on 2016-12-28 12:10:53?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 30.02,
+    "affected_txn_ids": [
+      "3581141"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}

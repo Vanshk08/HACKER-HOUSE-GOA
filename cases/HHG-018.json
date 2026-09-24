@@ -1,0 +1,237 @@
+{
+  "case_id": "HHG-018",
+  "case": {
+    "status": "completed",
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3491361"
+    ],
+    "first_suspicious_txn_id": "3491361",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 39.08,
+    "evidence": [
+      "Customer C02354 message: 'I never made this $39.08 purchase. Please check my card.' Refers to 3491361.",
+      "Transaction graph analysis shows a 'Large shared-card network: 7078 related transactions' fraud signal."
+    ],
+    "similar_prior_cases": [],
+    "summary": "The customer explicitly reported transaction 3491361 as unauthorized. This is supported by a \"Large shared-card network\" fraud signal identified through transaction graph analysis, suggesting potential card compromise or involvement in a broader fraudulent scheme. However, the transaction details (amount, channel, and billing region) are consistent with the customer's historical spending patterns, which could indicate a legitimate transaction that the customer has forgotten. A customer validation request has been sent, and the response is pending. Without the customer's confirmation or denial after formal outreach, it is not possible to definitively determine if the transaction is fraudulent or legitimate. Therefore, the case remains uncertain.",
+    "written_to_graph": false,
+    "graph_case_id": "",
+    "case_id": "HHG-018",
+    "customer_id": "C02354",
+    "card_id": "C02354-K2",
+    "flagged_txn_id": "3491361",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C02354 message: 'I never made this $39.08 purchase. Please check my card.' Refers to 3491361.",
+    "risk_score": null,
+    "confidence": 0.6,
+    "fraud_type": "card_compromise",
+    "reasoning": "The customer explicitly reported transaction 3491361 as unauthorized. This is supported by a \"Large shared-card network\" fraud signal identified through transaction graph analysis, suggesting potential card compromise or involvement in a broader fraudulent scheme. However, the transaction details (amount, channel, and billing region) are consistent with the customer's historical spending patterns, which could indicate a legitimate transaction that the customer has forgotten. A customer validation request has been sent, and the response is pending. Without the customer's confirmation or denial after formal outreach, it is not possible to definitively determine if the transaction is fraudulent or legitimate. Therefore, the case remains uncertain.",
+    "customer_response_status": "unknown"
+  },
+  "evidence_requests": [
+    {
+      "request_id": "req_cust_3491361",
+      "request_type": "customer_confirmation",
+      "transaction_id": "3491361",
+      "question": "Did you authorize this $39.08 purchase on 2016-11-27 13:41:26?",
+      "status": "pending",
+      "customer_response_status": "unknown",
+      "metadata": {
+        "channel": "customer_outreach",
+        "awaiting_response": true,
+        "customer_response_status": "unknown",
+        "simulated_customer_response": null
+      }
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Initial intake triage: route to L1 for cardholder verification."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Initial intake triage: initialize case based on intake trigger."
+      }
+    ],
+    "final": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "L1",
+        "reason": "Route to L1 operations for cardholder transaction confirmation."
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Mandatory case creation triggered: fraud probability (0.50 >= 0.30)."
+      }
+    ]
+  },
+  "sar": {
+    "file": false,
+    "reason": "SAR threshold not met (exposure $39.08 <= $1,000, no verified multi-card fraud cluster).",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": [],
+    "reasons": [
+      "SAR threshold not met (exposure $39.08 <= $1,000, no verified multi-card fraud cluster)."
+    ]
+  },
+  "stop_reason": "Investigation concluded: 5 tool call(s) over 6 iteration(s) evaluated across competing hypotheses.",
+  "tool_calls": 5,
+  "tokens": 0,
+  "latency_s": 38.943,
+  "provider": "openrouter",
+  "model": "google/gemini-2.5-flash",
+  "status": "completed",
+  "runtime_seconds": 38.943,
+  "latency_ms": 38943.0,
+  "latency": {
+    "seconds": 38.943,
+    "ms": 38943.0
+  },
+  "input": {
+    "customer_id": "C02354",
+    "card_id": "C02354-K2",
+    "flagged_txn_id": "3491361",
+    "trigger_type": "customer_report",
+    "trigger_text": "Customer C02354 message: 'I never made this $39.08 purchase. Please check my card.' Refers to 3491361.",
+    "risk_score": null
+  },
+  "investigation": {
+    "tools_used": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "request_customer_validation"
+    ],
+    "tool_call_sequence": [
+      "get_transaction",
+      "get_customer_history",
+      "get_transaction_sequence",
+      "investigate_transaction_graph",
+      "request_customer_validation"
+    ],
+    "tool_call_count": 5,
+    "evidence_count": 5,
+    "hypotheses": [
+      {
+        "id": "hyp_1_fraud",
+        "title": "Unauthorized Fraud",
+        "description": "The customer explicitly reported the transaction as unauthorized. The transaction graph analysis revealed a 'Large shared-card network' fraud signal, suggesting potential compromise or involvement in a broader fraudulent scheme. While the transaction details (amount, channel, region) align with the customer's historical behavior, the customer's report and the network signal strongly suggest fraud.",
+        "confidence": 0.7,
+        "supporting_evidence": [
+          "Customer C02354 message: 'I never made this $39.08 purchase. Please check my card.' Refers to 3491361.",
+          "Transaction graph analysis shows a 'Large shared-card network: 7078 related transactions' fraud signal."
+        ],
+        "contradicting_evidence": [
+          "Transaction amount ($39.08) is within the customer's typical spending range.",
+          "Transaction channel ('in_person') is a historical channel for the customer.",
+          "Billing region ('126.0') is a historical region for the customer.",
+          "No rapid transaction sequence observed around the flagged transaction."
+        ]
+      },
+      {
+        "id": "hyp_2_legitimate",
+        "title": "Legitimate Customer Activity (Customer Error)",
+        "description": "The transaction appears consistent with the customer's historical spending patterns, channels, and regions. It is possible the customer simply forgot about the purchase or made an error in reporting it as unauthorized. This hypothesis will be supported if the customer confirms the transaction.",
+        "confidence": 0.3,
+        "supporting_evidence": [
+          "Transaction amount ($39.08) is within the customer's typical spending range.",
+          "Transaction channel ('in_person') is a historical channel for the customer.",
+          "Billing region ('126.0') is a historical region for the customer.",
+          "No rapid transaction sequence observed around the flagged transaction."
+        ],
+        "contradicting_evidence": [
+          "Customer C02354 message: 'I never made this $39.08 purchase. Please check my card.' Refers to 3491361.",
+          "Transaction graph analysis shows a 'Large shared-card network: 7078 related transactions' fraud signal."
+        ]
+      }
+    ],
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3491361",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3491361",
+        "question": "Did you authorize this $39.08 purchase on 2016-11-27 13:41:26?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "iteration_count": 6
+  },
+  "assessment": {
+    "verdict": "uncertain",
+    "fraud_probability": 0.5,
+    "fraud_type": "card_compromise",
+    "exposure": 39.08,
+    "affected_txn_ids": [
+      "3491361"
+    ],
+    "supporting_evidence": [
+      "Customer C02354 message: 'I never made this $39.08 purchase. Please check my card.' Refers to 3491361.",
+      "Transaction graph analysis shows a 'Large shared-card network: 7078 related transactions' fraud signal."
+    ],
+    "contradicting_evidence": [
+      "Transaction amount ($39.08) is within the customer's typical spending range.",
+      "Transaction channel ('in_person') is a historical channel for the customer.",
+      "Billing region ('126.0') is a historical region for the customer.",
+      "No rapid transaction sequence observed around the flagged transaction.",
+      "Customer response to validation request is pending."
+    ],
+    "reasoning": "The customer explicitly reported transaction 3491361 as unauthorized. This is supported by a \"Large shared-card network\" fraud signal identified through transaction graph analysis, suggesting potential card compromise or involvement in a broader fraudulent scheme. However, the transaction details (amount, channel, and billing region) are consistent with the customer's historical spending patterns, which could indicate a legitimate transaction that the customer has forgotten. A customer validation request has been sent, and the response is pending. Without the customer's confirmation or denial after formal outreach, it is not possible to definitively determine if the transaction is fraudulent or legitimate. Therefore, the case remains uncertain.",
+    "confidence": 0.6
+  },
+  "policy": {
+    "actions": [
+      "VERIFY_WITH_CUSTOMER",
+      "CREATE_CASE"
+    ],
+    "primary_action": "VERIFY_WITH_CUSTOMER",
+    "matched_rules": [
+      "R1",
+      "GLOBAL_CREATE_CASE"
+    ],
+    "rationale": "Policy evaluation completed.\n[R1] Weak single signal (fraud probability 0.50 < 0.70). Selected VERIFY_WITH_CUSTOMER without blocking card.\n[GLOBAL_CREATE_CASE] Mandatory case creation triggered: fraud probability (0.50 >= 0.30), external evidence requested (1 pending request(s)), customer disputed transaction.",
+    "requires_customer_response": true,
+    "evidence_requests": [
+      {
+        "request_id": "req_cust_3491361",
+        "request_type": "customer_confirmation",
+        "transaction_id": "3491361",
+        "question": "Did you authorize this $39.08 purchase on 2016-11-27 13:41:26?",
+        "status": "pending",
+        "customer_response_status": "unknown",
+        "metadata": {
+          "channel": "customer_outreach",
+          "awaiting_response": true,
+          "customer_response_status": "unknown",
+          "simulated_customer_response": null
+        }
+      }
+    ],
+    "exposure": 39.08,
+    "affected_txn_ids": [
+      "3491361"
+    ],
+    "customer_response_status": "unknown",
+    "policy_conflicts": []
+  },
+  "errors": []
+}
